@@ -206,6 +206,33 @@ export async function resetB2BPassword(email: string): Promise<{ message?: strin
   }
 }
 
+export async function associateFacility(payload: {
+  userId: string;
+  facilityName?: string;
+  facilityType?: string;
+  phone?: string;
+  city?: string;
+  region?: string;
+  businessAddress?: string;
+  efdaLicenseNo?: string;
+  tinNumber?: string;
+  vatRegistered?: boolean;
+}): Promise<{ user?: UserProfile; error?: string; message?: string }> {
+  try {
+    const res = await fetch('/api/auth/associate-facility', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) return { error: data.error || 'Failed to associate facility' };
+    return data;
+  } catch (err) {
+    return { error: 'Network error associating facility.' };
+  }
+}
+
+
 export async function fetchUsers(): Promise<UserProfile[]> {
   try {
     const res = await fetch('/api/users');

@@ -62,6 +62,10 @@ interface AppContextType {
   selectedProductId: string | null;
   setSelectedProductId: (id: string | null) => void;
 
+  // Search Query
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+
   // Role & User
   currentRole: UserRole;
   switchRole: (role: UserRole) => void;
@@ -73,9 +77,10 @@ interface AppContextType {
   // Auth Modal
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
-  authModalMode: 'login' | 'register' | 'forgot_password';
-  setAuthModalMode: (mode: 'login' | 'register' | 'forgot_password') => void;
-  openAuthModal: (mode?: 'login' | 'register' | 'forgot_password') => void;
+  authModalMode: 'login' | 'signup' | 'register_facility' | 'forgot_password';
+  setAuthModalMode: (mode: 'login' | 'signup' | 'register_facility' | 'forgot_password') => void;
+  openAuthModal: (mode?: 'login' | 'signup' | 'register_facility' | 'forgot_password') => void;
+
 
   // Data
   products: Product[];
@@ -190,10 +195,12 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const [allUsers, setAllUsers] = useState<UserProfile[]>(INITIAL_USER_PROFILES);
   const [currentRole, setCurrentRole] = useState<UserRole>('public');
   const [currentUser, setCurrentUser] = useState<UserProfile>(INITIAL_USER_PROFILES[0]);
+
 
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [quotations, setQuotations] = useState<QuotationRequest[]>(INITIAL_QUOTATIONS);
@@ -261,14 +268,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Test Notification Dispatched', `Triggered ${eventType} on channel [${targetChannel}]`, 'info');
   };
 
-  // B2B Auth Modal
+  // Auth Modal
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'forgot_password'>('login');
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup' | 'register_facility' | 'forgot_password'>('login');
 
-  const openAuthModal = (mode: 'login' | 'register' | 'forgot_password' = 'login') => {
+  const openAuthModal = (mode: 'login' | 'signup' | 'register_facility' | 'forgot_password' = 'login') => {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
   };
+
 
   const logoutUser = () => {
     const publicUser = allUsers.find((u) => u.role === 'public') || INITIAL_USER_PROFILES[0];
@@ -818,12 +826,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setCurrentPage,
         selectedProductId,
         setSelectedProductId,
+        searchQuery,
+        setSearchQuery,
         currentRole,
         switchRole,
         currentUser,
         setCurrentUser,
         allUsers,
         logoutUser,
+
         isAuthModalOpen,
         setIsAuthModalOpen,
         authModalMode,

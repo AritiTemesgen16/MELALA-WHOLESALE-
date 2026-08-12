@@ -441,7 +441,7 @@ async function startServer() {
     res.json(usersStore.map(sanitizeUser));
   });
 
-  // B2B Customer Registration
+  // B2B Customer / User Registration
   app.post('/api/auth/register', (req, res) => {
     const {
       name,
@@ -459,14 +459,14 @@ async function startServer() {
       role,
     } = req.body;
 
-    if (!email || !facilityName || !name || !phone) {
-      return res.status(400).json({ error: 'Missing required B2B account registration fields (Name, Email, Facility Name, Phone required).' });
+    if (!email || !name) {
+      return res.status(400).json({ error: 'Missing required account registration fields (Name and Email required).' });
     }
 
     // Check duplicate email
-    const existing = usersStore.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    const existing = usersStore.find((u) => u.email.toLowerCase() === email.toLowerCase().trim());
     if (existing) {
-      return res.status(400).json({ error: 'A business account with this email address already exists. Please login or request a password reset.' });
+      return res.status(400).json({ error: 'An account with this email address already exists. Please sign in or reset your password.' });
     }
 
     // Check duplicate TIN if provided
@@ -478,19 +478,20 @@ async function startServer() {
     }
 
     const hasLicense = efdaLicenseNo && efdaLicenseNo.trim().length > 3;
+    const finalFacilityName = facilityName && facilityName.trim() ? facilityName.trim() : `${name}'s Healthcare Account`;
 
     const newUser = {
       id: `user-${Date.now()}`,
-      name,
-      email,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
       password: password || undefined,
-      role: (role || (hasLicense ? 'verified_customer' : 'public')) as any,
-      facilityName,
+      role: (role || (hasLicense ? 'verified_customer' : 'verified_customer')) as any,
+      facilityName: finalFacilityName,
       facilityType: facilityType || 'Pharmacy',
       businessAddress: businessAddress || '',
       region: region || 'Addis Ababa',
       city: city || 'Addis Ababa',
-      phone,
+      phone: phone || '',
       efdaLicenseNo: efdaLicenseNo || '',
       tinNumber: tinNumber || '',
       vatRegistered: Boolean(vatRegistered),
@@ -503,10 +504,52 @@ async function startServer() {
 
     usersStore.push(newUser);
     res.status(201).json({
-      message: 'B2B Account registered successfully.',
+      message: 'Account registered successfully.',
       user: sanitizeUser(newUser),
     });
   });
+
+  // Associate / Register Healthcare Facility for Existing Account
+  app.post('/api/auth/associate-facility', (req, res) => {
+    const {
+      userId,
+      facilityName,
+      facilityType,
+      phone,
+      city,
+      region,
+      businessAddress,
+      efdaLicenseNo,
+      tinNumber,
+      vatRegistered,
+    } = req.body;
+
+    const user = usersStore.find((u) => u.id === userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User account not found.' });
+    }
+
+    if (facilityName) user.facilityName = facilityName;
+    if (facilityType) user.facilityType = facilityType;
+    if (phone) user.phone = phone;
+    if (city) user.city = city;
+    if (region) user.region = region;
+    if (businessAddress) user.businessAddress = businessAddress;
+    if (efdaLicenseNo) user.efdaLicenseNo = efdaLicenseNo;
+    if (tinNumber) user.tinNumber = tinNumber;
+    if (vatRegistered !== undefined) user.vatRegistered = Boolean(vatRegistered);
+
+    const hasLicense = user.efdaLicenseNo && user.efdaLicenseNo.trim().length > 3;
+    if (hasLicense) {
+      user.verificationStatus = 'UNDER_REVIEW';
+    }
+
+    res.json({
+      message: 'Healthcare facility details associated successfully.',
+      user: sanitizeUser(user),
+    });
+  });
+
 
   // B2B Customer Login
   app.post('/api/auth/login', (req, res) => {

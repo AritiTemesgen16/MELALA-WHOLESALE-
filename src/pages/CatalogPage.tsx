@@ -18,19 +18,19 @@ import {
 } from 'lucide-react';
 
 export const CatalogPage: React.FC = () => {
-  const { products, currentRole, setIsNewProductModalOpen } = useApp();
+  const { products, currentRole, setIsNewProductModalOpen, searchQuery, setSearchQuery } = useApp();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
   const [selectedAvailability, setSelectedAvailability] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'featured' | 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'stock'>('featured');
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [onlyColdChain, setOnlyColdChain] = useState<boolean>(false);
   const [onlyStrategic, setOnlyStrategic] = useState<boolean>(false);
   const [onlyPrescription, setOnlyPrescription] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
 
   const categoriesList: { id: string; label: string }[] = [
     { id: 'all', label: 'All Products' },
@@ -68,17 +68,29 @@ export const CatalogPage: React.FC = () => {
       if (maxPrice && p.unitPriceEtb > parseFloat(maxPrice)) return false;
 
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesName = p.name.toLowerCase().includes(q);
-        const matchesGeneric = p.genericName?.toLowerCase().includes(q);
-        const matchesBrand = p.brand.toLowerCase().includes(q);
-        const matchesEfda = p.efdaRegistrationNo.toLowerCase().includes(q);
-        const matchesSku = p.sku.toLowerCase().includes(q);
-        const matchesCat = p.category.toLowerCase().includes(q);
-        if (!matchesName && !matchesGeneric && !matchesBrand && !matchesEfda && !matchesSku && !matchesCat) {
+        const queryTokens = searchQuery.trim().toLowerCase().split(/\s+/);
+        const searchBlob = [
+          p.name,
+          p.genericName || '',
+          p.brand || '',
+          p.category || '',
+          p.dosageForm || '',
+          p.strength || '',
+          p.packSize || '',
+          p.efdaRegistrationNo || '',
+          p.sku || '',
+          p.description || '',
+          p.manufacturerCountry || '',
+        ]
+          .join(' ')
+          .toLowerCase();
+
+        const allTokensMatch = queryTokens.every((token) => searchBlob.includes(token));
+        if (!allTokensMatch) {
           return false;
         }
       }
+
 
       return true;
     });

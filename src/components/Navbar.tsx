@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useApp, PageView } from '../context/AppContext';
-import { RoleSwitcher } from './RoleSwitcher';
 import { MelalaLogo } from './MelalaLogo';
 import {
+
   FileText,
   ShoppingBag,
   PhoneCall,
@@ -42,10 +42,11 @@ export const Navbar: React.FC = () => {
     setIsCallbackModalOpen,
     unreadNotificationCount,
     setIsNotificationModalOpen,
+    searchQuery,
+    setSearchQuery,
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +54,7 @@ export const Navbar: React.FC = () => {
       setCurrentPage('catalog');
     }
   };
+
 
   const navItems: { id: PageView; label: string; icon: React.ReactNode; showFor?: string[] }[] = [
     { id: 'home', label: 'Home', icon: <Building2 className="w-4 h-4" /> },
@@ -80,11 +82,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
-      {/* Top Demo Persona Bar */}
-      <RoleSwitcher />
-
       {/* Primary Brand & Contact Bar */}
       <div className="bg-slate-900 text-slate-200 border-b border-slate-800 text-xs px-4 py-2">
+
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-4 text-slate-300">
             <span className="flex items-center gap-1 text-teal-400 font-semibold">
@@ -181,29 +181,29 @@ export const Navbar: React.FC = () => {
             <div className="hidden sm:flex items-center gap-1.5">
               <button
                 onClick={() => openAuthModal('login')}
-                className="px-3 py-1.5 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
+                className="px-2.5 py-1.5 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
               >
                 <LogIn className="w-3.5 h-3.5 text-teal-700" />
                 <span>Sign In</span>
               </button>
 
               <button
-                onClick={() => openAuthModal('register')}
-                className="px-3 py-1.5 bg-teal-800 hover:bg-teal-900 text-white rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1 shadow-2xs"
+                onClick={() => openAuthModal('signup')}
+                className="px-2.5 py-1.5 border border-teal-600 text-teal-800 bg-teal-50/50 hover:bg-teal-100/80 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
               >
-                <UserPlus className="w-3.5 h-3.5 text-amber-300" />
-                <span>Register Facility</span>
+                <UserPlus className="w-3.5 h-3.5 text-teal-700" />
+                <span>Sign Up</span>
               </button>
 
               <button
-                onClick={() => setIsCallbackModalOpen(true)}
-                className="px-2.5 py-1.5 bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center gap-1"
-                title="Request Wholesale Representative Call"
+                onClick={() => openAuthModal('register_facility')}
+                className="px-3 py-1.5 bg-teal-800 hover:bg-teal-900 text-white rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1 shadow-2xs"
               >
-                <PhoneCall className="w-3.5 h-3.5 text-amber-700" />
-                <span>Request Call</span>
+                <Building2 className="w-3.5 h-3.5 text-amber-300" />
+                <span>Register Facility</span>
               </button>
             </div>
+
           )}
 
           {/* Action Button depending on persona */}
