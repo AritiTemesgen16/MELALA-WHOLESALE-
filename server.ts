@@ -14,14 +14,14 @@ import {
   INITIAL_DEMAND_INSIGHTS,
 } from './src/data/mockData.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const currentFilename = typeof __filename !== 'undefined' ? __filename : '';
+const currentDirname = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: '10mb' }));
 
   // In-memory persistent state for B2B demo session
   let productsStore = [...INITIAL_PRODUCTS];
@@ -33,6 +33,7 @@ async function startServer() {
   let promotionsStore = [...INITIAL_PROMOTIONS];
   let callbacksStore = [...INITIAL_CALLBACKS];
   let demandStore = [...INITIAL_DEMAND_INSIGHTS];
+  let ownerPhotosStore = { samuel: '', emnet: '' };
 
   // Initialize Gemini AI Client lazily/safely
   function getGeminiClient() {
@@ -55,6 +56,18 @@ async function startServer() {
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', company: 'Melala Pharmaceutical Wholesale B2B' });
+  });
+
+  // Owner Photos Persistence API
+  app.get('/api/owners/photos', (req, res) => {
+    res.json(ownerPhotosStore);
+  });
+
+  app.post('/api/owners/photos', (req, res) => {
+    const { samuel, emnet } = req.body || {};
+    if (typeof samuel === 'string') ownerPhotosStore.samuel = samuel;
+    if (typeof emnet === 'string') ownerPhotosStore.emnet = emnet;
+    res.json({ success: true, ownerPhotos: ownerPhotosStore });
   });
 
   // GET Products

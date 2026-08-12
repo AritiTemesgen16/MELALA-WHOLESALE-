@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { MelalaLogo } from '../components/MelalaLogo';
-import samuelPhoto from '../assets/images/samuel_temesgen_photo_1786460215665.jpg';
-import emnetPhoto from '../assets/images/emnet_amde_photo_1786460230889.jpg';
+import samuelPhoto from '../assets/images/samuel_temesgen_1786458998149.jpg';
+import emnetPhoto from '../assets/images/emnet_amde_1786459015595.jpg';
 import {
   Building2,
   MapPin,
@@ -15,6 +15,10 @@ import {
   Clock,
   CheckCircle2,
   User,
+  Camera,
+  Upload,
+  RotateCcw,
+  Sparkles,
 } from 'lucide-react';
 
 export const AboutContactPage: React.FC = () => {
@@ -27,6 +31,92 @@ export const AboutContactPage: React.FC = () => {
   const [city, setCity] = useState('Addis Ababa');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  // Custom uploaded photos state with server & localStorage persistence
+  const [samuelPhotoUrl, setSamuelPhotoUrl] = useState<string>(() => {
+    return localStorage.getItem('melala_owner_samuel_custom_photo') || samuelPhoto;
+  });
+  const [emnetPhotoUrl, setEmnetPhotoUrl] = useState<string>(() => {
+    return localStorage.getItem('melala_owner_emnet_custom_photo') || emnetPhoto;
+  });
+
+  const samuelInputRef = useRef<HTMLInputElement>(null);
+  const emnetInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch photos from server on mount
+  React.useEffect(() => {
+    fetch('/api/owners/photos')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.samuel) {
+          setSamuelPhotoUrl(data.samuel);
+          localStorage.setItem('melala_owner_samuel_custom_photo', data.samuel);
+        }
+        if (data?.emnet) {
+          setEmnetPhotoUrl(data.emnet);
+          localStorage.setItem('melala_owner_emnet_custom_photo', data.emnet);
+        }
+      })
+      .catch(() => {
+        // ignore fetch error if server offline
+      });
+  }, []);
+
+  const handlePhotoFileChange = (ownerKey: 'samuel' | 'emnet', e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        if (ownerKey === 'samuel') {
+          setSamuelPhotoUrl(dataUrl);
+          localStorage.setItem('melala_owner_samuel_custom_photo', dataUrl);
+          fetch('/api/owners/photos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ samuel: dataUrl }),
+          }).catch(() => {});
+          showToast('Samuel Temesgen Photo Saved!', 'Your custom photo is saved on the server and live on the application.', 'success');
+        } else {
+          setEmnetPhotoUrl(dataUrl);
+          localStorage.setItem('melala_owner_emnet_custom_photo', dataUrl);
+          fetch('/api/owners/photos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emnet: dataUrl }),
+          }).catch(() => {});
+          showToast('Emnet Amde Photo Saved!', 'Your custom photo is saved on the server and live on the application.', 'success');
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+    // reset input value so re-selecting same file triggers onChange
+    e.target.value = '';
+  };
+
+  const handleResetPhoto = (ownerKey: 'samuel' | 'emnet') => {
+    if (ownerKey === 'samuel') {
+      setSamuelPhotoUrl(samuelPhoto);
+      localStorage.removeItem('melala_owner_samuel_custom_photo');
+      fetch('/api/owners/photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ samuel: '' }),
+      }).catch(() => {});
+      showToast('Photo Reverted', 'Reset Samuel Temesgen profile image to default.', 'info');
+    } else {
+      setEmnetPhotoUrl(emnetPhoto);
+      localStorage.removeItem('melala_owner_emnet_custom_photo');
+      fetch('/api/owners/photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emnet: '' }),
+      }).catch(() => {});
+      showToast('Photo Reverted', 'Reset Emnet Amde profile image to default.', 'info');
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,45 +142,137 @@ export const AboutContactPage: React.FC = () => {
 
       {/* Executive Leadership Team */}
       <div className="space-y-6">
-        <div className="border-b border-slate-200 pb-3">
-          <h2 className="text-xl font-extrabold text-slate-900">Executive Leadership</h2>
-          <p className="text-xs text-slate-500">
-            Founded and directed by licensed pharmaceutical professionals dedicated to ethical B2B healthcare distribution in Ethiopia.
-          </p>
+        <div className="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-xl font-extrabold text-slate-900">Executive Leadership</h2>
+            <p className="text-xs text-slate-500">
+              Founded and directed by licensed pharmaceutical professionals dedicated to ethical B2B healthcare distribution in Ethiopia.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-xs font-medium">
+            <Camera className="w-3.5 h-3.5 text-amber-600" />
+            <span>Click any avatar to upload your photo</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
+        {/* Hidden File Inputs */}
+        <input
+          type="file"
+          ref={samuelInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => handlePhotoFileChange('samuel', e)}
+        />
+        <input
+          type="file"
+          ref={emnetInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => handlePhotoFileChange('emnet', e)}
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl">
           {/* Samuel Temesgen */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex items-center gap-4 hover:border-teal-500/50 transition-all">
-            <img
-              src={samuelPhoto}
-              alt="Samuel Temesgen - Owner & Pharmacist"
-              referrerPolicy="no-referrer"
-              className="w-20 h-20 rounded-full object-cover border-2 border-teal-600 shrink-0 shadow-sm"
-            />
-            <div>
-              <h3 className="font-extrabold text-slate-900 text-base">Samuel Temesgen</h3>
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col sm:flex-row items-start gap-4 hover:border-teal-500/50 transition-all relative group">
+            <div className="relative shrink-0">
+              <img
+                src={samuelPhotoUrl}
+                alt="Samuel Temesgen - Owner & Pharmacist"
+                referrerPolicy="no-referrer"
+                className="w-20 h-20 rounded-full object-cover object-top border-2 border-teal-600 shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => samuelInputRef.current?.click()}
+                title="Click to upload custom photo for Samuel"
+              />
+              <button
+                type="button"
+                onClick={() => samuelInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 p-1.5 bg-teal-600 text-white rounded-full shadow-md hover:bg-teal-700 transition-colors"
+                title="Upload Photo"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-extrabold text-slate-900 text-base">Samuel Temesgen</h3>
+                {samuelPhotoUrl !== samuelPhoto && (
+                  <button
+                    type="button"
+                    onClick={() => handleResetPhoto('samuel')}
+                    className="text-[11px] text-slate-400 hover:text-slate-600 flex items-center gap-1 font-medium underline"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Reset
+                  </button>
+                )}
+              </div>
               <p className="text-xs font-bold text-teal-700 uppercase tracking-wide">Owner & Pharmacist</p>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Registered Licensed Pharmacist overseeing national supply chain operations, quality assurance, and partner relations.
               </p>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => samuelInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 rounded-lg text-xs font-semibold transition-all"
+                >
+                  <Upload className="w-3 h-3 text-teal-600" />
+                  <span>Upload Your Photo</span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Emnet Amde */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex items-center gap-4 hover:border-teal-500/50 transition-all">
-            <img
-              src={emnetPhoto}
-              alt="Emnet Amde - Owner & Pharmacist"
-              referrerPolicy="no-referrer"
-              className="w-20 h-20 rounded-full object-cover border-2 border-teal-600 shrink-0 shadow-sm"
-            />
-            <div>
-              <h3 className="font-extrabold text-slate-900 text-base">Emnet Amde</h3>
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col sm:flex-row items-start gap-4 hover:border-teal-500/50 transition-all relative group">
+            <div className="relative shrink-0">
+              <img
+                src={emnetPhotoUrl}
+                alt="Emnet Amde - Owner & Pharmacist"
+                referrerPolicy="no-referrer"
+                className="w-20 h-20 rounded-full object-cover object-center border-2 border-teal-600 shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => emnetInputRef.current?.click()}
+                title="Click to upload custom photo for Emnet"
+              />
+              <button
+                type="button"
+                onClick={() => emnetInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 p-1.5 bg-teal-600 text-white rounded-full shadow-md hover:bg-teal-700 transition-colors"
+                title="Upload Photo"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-extrabold text-slate-900 text-base">Emnet Amde</h3>
+                {emnetPhotoUrl !== emnetPhoto && (
+                  <button
+                    type="button"
+                    onClick={() => handleResetPhoto('emnet')}
+                    className="text-[11px] text-slate-400 hover:text-slate-600 flex items-center gap-1 font-medium underline"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Reset
+                  </button>
+                )}
+              </div>
               <p className="text-xs font-bold text-teal-700 uppercase tracking-wide">Owner & Pharmacist</p>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Registered Licensed Pharmacist directing clinical compliance, EFDA regulatory affairs, and pharmaceutical inventory management.
               </p>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => emnetInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 rounded-lg text-xs font-semibold transition-all"
+                >
+                  <Upload className="w-3 h-3 text-teal-600" />
+                  <span>Upload Your Photo</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
