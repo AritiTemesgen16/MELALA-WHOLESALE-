@@ -11,8 +11,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm run build
-    preDeployCommand: npx drizzle-kit push
+    buildCommand: npm run db:migrate && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
     envVars:
