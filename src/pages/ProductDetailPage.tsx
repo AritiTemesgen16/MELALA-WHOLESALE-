@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ProductCard } from '../components/ProductCard';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -17,6 +18,9 @@ import {
   Share2,
   FileCheck,
   PhoneCall,
+  Edit3,
+  Image as ImageIcon,
+  Cloud,
 } from 'lucide-react';
 
 export const ProductDetailPage: React.FC = () => {
@@ -30,10 +34,18 @@ export const ProductDetailPage: React.FC = () => {
     toggleFavorite,
     setIsQuoteDrawerOpen,
     showToast,
+    currentRole,
+    setEditingProduct,
+    setIsNewProductModalOpen,
   } = useApp();
 
   const product = products.find((p) => p.id === selectedProductId) || products[0];
 
+  const galleryImages = product.images && product.images.length > 0
+    ? product.images
+    : (product.imageUrl ? [product.imageUrl] : []);
+
+  const [activeImage, setActiveImage] = useState<string>(galleryImages[0] || product.imageUrl);
   const [quantity, setQuantity] = useState<number>(product.moq || 1);
   const isFav = favorites.includes(product.id);
 
@@ -57,26 +69,44 @@ export const ProductDetailPage: React.FC = () => {
     showToast('Product Link Copied!', 'Shareable link copied to clipboard.', 'info');
   };
 
+  const isCloudinaryActive = activeImage.includes('cloudinary.com');
+  const targetFolder = product.category === 'medical-equipment' ? 'melala/equipment' : 'melala/products';
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-      {/* Top Back Navigation */}
-      <button
-        onClick={() => setCurrentPage('catalog')}
-        className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Back to Product Directory</span>
-      </button>
+      {/* Top Back Navigation & Admin Controls */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setCurrentPage('catalog')}
+          className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Product Directory</span>
+        </button>
+
+        {currentRole === 'admin' && (
+          <button
+            onClick={() => {
+              setEditingProduct(product);
+              setIsNewProductModalOpen(true);
+            }}
+            className="px-3 py-1.5 bg-slate-900 text-amber-400 hover:bg-slate-800 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit Product &amp; Cloudinary Gallery</span>
+          </button>
+        )}
+      </div>
 
       {/* Main Spec Grid */}
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm grid grid-cols-1 md:grid-cols-12 gap-6 p-6 sm:p-8">
-        {/* Left Col: Image & Badges */}
+        {/* Left Col: Image & Gallery */}
         <div className="md:col-span-5 space-y-4">
           <div className="h-80 bg-slate-100 rounded-xl overflow-hidden relative border border-slate-200">
             <img
-              src={product.imageUrl}
+              src={getOptimizedImageUrl(activeImage, { width: 1000 })}
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-all duration-200"
               referrerPolicy="no-referrer"
             />
 
@@ -93,6 +123,13 @@ export const ProductDetailPage: React.FC = () => {
               )}
             </div>
 
+            {isCloudinaryActive && (
+              <div className="absolute bottom-3 left-3 bg-slate-900/80 text-teal-300 font-mono text-[10px] px-2.5 py-1 rounded-lg backdrop-blur-xs flex items-center gap-1">
+                <Cloud className="w-3.5 h-3.5 text-teal-400" />
+                <span>Cloudinary: {targetFolder}</span>
+              </div>
+            )}
+
             <button
               onClick={() => toggleFavorite(product.id)}
               className={`absolute top-3 right-3 p-2 rounded-full shadow-xs backdrop-blur-md cursor-pointer ${
@@ -102,6 +139,29 @@ export const ProductDetailPage: React.FC = () => {
               <Heart className={`w-5 h-5 ${isFav ? 'fill-rose-600' : ''}`} />
             </button>
           </div>
+
+          {/* Gallery Thumbnails */}
+          {galleryImages.length > 1 && (
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <ImageIcon className="w-3.5 h-3.5 text-teal-600" />
+                Cloudinary Gallery ({galleryImages.length} Views):
+              </span>
+              <div className="grid grid-cols-5 gap-2">
+                {galleryImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImage(img)}
+                    className={`h-14 rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
+                      activeImage === img ? 'border-teal-700 ring-2 ring-teal-600/30' : 'border-slate-200 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={getOptimizedImageUrl(img, { width: 200 })} alt={`Gallery view ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* EFDA Regulatory Card */}
           <div className="p-4 bg-teal-50 border border-teal-200 rounded-xl space-y-2 text-xs text-teal-950">

@@ -14,6 +14,7 @@ import {
   NotificationEventType,
   NotificationChannel,
   NotificationChannelConfig,
+  CategoryInfo,
 } from '../types';
 import {
   INITIAL_PRODUCTS,
@@ -24,6 +25,7 @@ import {
   INITIAL_PROMOTIONS,
   INITIAL_CALLBACKS,
   INITIAL_DEMAND_INSIGHTS,
+  INITIAL_CATEGORIES,
 } from '../data/mockData';
 import {
   INITIAL_NOTIFICATIONS,
@@ -45,6 +47,7 @@ import {
   createCallback,
   addLeadNote,
   updateLead,
+  fetchCategories,
 } from '../services/api';
 
 export type PageView =
@@ -97,6 +100,10 @@ interface AppContextType {
   setCallbacks: React.Dispatch<React.SetStateAction<CallbackRequest[]>>;
   demandInsights: DemandInsight[];
   setDemandInsights: React.Dispatch<React.SetStateAction<DemandInsight[]>>;
+  categories: CategoryInfo[];
+  setCategories: React.Dispatch<React.SetStateAction<CategoryInfo[]>>;
+  editingProduct: Product | null;
+  setEditingProduct: (product: Product | null) => void;
 
   // RFQ Cart & Reorder
   cartItems: CartItem[];
@@ -190,10 +197,63 @@ interface AppContextType {
   refreshData: () => Promise<void>;
 }
 
+function getPageViewFromPath(): PageView {
+  if (typeof window === 'undefined') return 'home';
+  const path = window.location.pathname.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+
+  if (path.includes('/about') || hash.includes('about') || path.includes('/contact')) return 'about-contact';
+  if (path.includes('/catalog') || hash.includes('catalog')) return 'catalog';
+  if (path.includes('/product') || hash.includes('product')) return 'product-detail';
+  if (path.includes('/customer') || path.includes('/orders') || hash.includes('customer')) return 'customer-portal';
+  if (path.includes('/sales') || hash.includes('sales')) return 'sales-rep';
+  if (path.includes('/admin') || hash.includes('admin')) return 'admin';
+  return 'home';
+}
+
+function getPathFromPageView(page: PageView): string {
+  switch (page) {
+    case 'about-contact':
+      return '/about';
+    case 'catalog':
+      return '/catalog';
+    case 'product-detail':
+      return '/product-detail';
+    case 'customer-portal':
+      return '/customer-portal';
+    case 'sales-rep':
+      return '/sales-rep';
+    case 'admin':
+      return '/admin';
+    case 'home':
+    default:
+      return '/';
+  }
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentPage, setCurrentPage] = useState<PageView>('home');
+  const [currentPage, setCurrentPageState] = useState<PageView>(() => getPageViewFromPath());
+
+  const setCurrentPage = (page: PageView) => {
+    setCurrentPageState(page);
+    if (typeof window !== 'undefined') {
+      const targetPath = getPathFromPageView(page);
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ page }, '', targetPath);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const page = getPageViewFromPath();
+      setCurrentPageState(page);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -209,6 +269,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [promotions, setPromotions] = useState<Promotion[]>(INITIAL_PROMOTIONS);
   const [callbacks, setCallbacks] = useState<CallbackRequest[]>(INITIAL_CALLBACKS);
   const [demandInsights, setDemandInsights] = useState<DemandInsight[]>(INITIAL_DEMAND_INSIGHTS);
+  const [categories, setCategories] = useState<CategoryInfo[]>(INITIAL_CATEGORIES);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>(['prod-101', 'prod-201']);
@@ -320,6 +382,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const fetchedDemands = await fetchDemandInsights();
     if (fetchedDemands && fetchedDemands.length > 0) setDemandInsights(fetchedDemands);
+
+    const fetchedCats = await fetchCategories();
+    if (fetchedCats && fetchedCats.length > 0) setCategories(fetchedCats);
   };
 
   useEffect(() => {
@@ -854,6 +919,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setCallbacks,
         demandInsights,
         setDemandInsights,
+        categories,
+        setCategories,
+        editingProduct,
+        setEditingProduct,
         cartItems,
         addToCart,
         removeFromCart,

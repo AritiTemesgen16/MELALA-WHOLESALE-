@@ -1,4 +1,4 @@
-import { Product, QuotationRequest, WholesaleOrder, CustomerLead, UserProfile } from '../types';
+import { Product, QuotationRequest, WholesaleOrder, CustomerLead, UserProfile, CategoryInfo } from '../types';
 
 export async function fetchProducts(params?: {
   category?: string;
@@ -492,5 +492,101 @@ export async function logAbandonedCart(payload: {
     });
   } catch (err) {
     console.error('Error logging abandoned cart:', err);
+  }
+}
+
+export async function uploadMedia(
+  dataUrl: string,
+  folder: 'products' | 'equipment' | 'categories' | 'owners' | 'general' = 'products',
+  publicId?: string
+): Promise<{ success: boolean; url?: string; public_id?: string; error?: string }> {
+  try {
+    const res = await fetch('/api/media/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataUrl, folder, publicId }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, error: data.error || 'Failed to upload media to server.' };
+    }
+    return data;
+  } catch (err: any) {
+    console.error('Error uploading media:', err);
+    return { success: false, error: err?.message || 'Network error during upload.' };
+  }
+}
+
+export async function updateProduct(id: string, updates: Partial<Product>): Promise<Product | null> {
+  try {
+    const res = await fetch(`/api/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!res.ok) throw new Error('Failed to update product');
+    return await res.json();
+  } catch (err) {
+    console.error('Error updating product:', err);
+    return null;
+  }
+}
+
+export async function fetchCategories(): Promise<CategoryInfo[]> {
+  try {
+    const res = await fetch('/api/categories');
+    if (!res.ok) throw new Error('Failed to fetch categories');
+    return await res.json();
+  } catch (err) {
+    console.error('Error fetching categories:', err);
+    return [];
+  }
+}
+
+export async function deleteMedia(
+  urlOrPublicId: string
+): Promise<{ success: boolean; public_id?: string; error?: string }> {
+  try {
+    const res = await fetch('/api/media/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: urlOrPublicId, publicId: urlOrPublicId }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, error: data.error || 'Failed to delete media asset.' };
+    }
+    return data;
+  } catch (err: any) {
+    console.error('Error deleting media:', err);
+    return { success: false, error: err?.message || 'Network error during media deletion.' };
+  }
+}
+
+export async function deleteProduct(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/products/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete product');
+    return true;
+  } catch (err) {
+    console.error('Error deleting product:', err);
+    return false;
+  }
+}
+
+export async function updateCategory(id: string, updates: Partial<CategoryInfo>): Promise<CategoryInfo | null> {
+  try {
+    const res = await fetch(`/api/categories/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!res.ok) throw new Error('Failed to update category');
+    return await res.json();
+  } catch (err) {
+    console.error('Error updating category:', err);
+    return null;
   }
 }

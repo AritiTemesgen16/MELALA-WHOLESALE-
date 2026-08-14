@@ -35,6 +35,7 @@ export const QuotationDrawer: React.FC = () => {
     submitQuoteRequest,
     submitDirectOrder,
     saveOrderDraft,
+    openAuthModal,
     showToast,
   } = useApp();
 
@@ -96,6 +97,12 @@ export const QuotationDrawer: React.FC = () => {
   };
 
   const handleRFSubmit = async () => {
+    if (currentUser.role === 'public') {
+      setIsQuoteDrawerOpen(false);
+      openAuthModal('signup');
+      showToast('B2B Account Required', 'Please sign in or register your facility to submit a price quotation request.', 'info');
+      return;
+    }
     if (moqViolations.length > 0) {
       showToast('MOQ Required', 'Please adjust item quantities to meet Minimum Order Quantities before submitting.', 'error');
       return;
@@ -110,6 +117,12 @@ export const QuotationDrawer: React.FC = () => {
   };
 
   const handleOrderSubmit = async () => {
+    if (currentUser.role === 'public') {
+      setIsQuoteDrawerOpen(false);
+      openAuthModal('signup');
+      showToast('B2B Account Required', 'Please sign in or register your facility to submit wholesale orders.', 'info');
+      return;
+    }
     if (moqViolations.length > 0) {
       showToast('MOQ Required', 'Please adjust item quantities to meet Minimum Order Quantities before submitting.', 'error');
       return;
@@ -125,6 +138,12 @@ export const QuotationDrawer: React.FC = () => {
   };
 
   const handleDraftSave = async () => {
+    if (currentUser.role === 'public') {
+      setIsQuoteDrawerOpen(false);
+      openAuthModal('signup');
+      showToast('B2B Account Required', 'Please sign in or register your facility to save order drafts.', 'info');
+      return;
+    }
     setIsSubmitting(true);
     await saveOrderDraft({
       deliveryCity: shippingCity,

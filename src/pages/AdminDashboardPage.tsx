@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { updateUserVerificationStatus } from '../services/api';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { VerificationStatus, OrderStatus } from '../types';
 import { SalesManagerPanel } from '../components/SalesManagerPanel';
 import {
@@ -63,6 +64,7 @@ export const AdminDashboardPage: React.FC = () => {
     approveVerification,
     rejectVerification,
     setIsNewProductModalOpen,
+    setEditingProduct,
     allUsers,
     updateOrderStatus,
     showToast,
@@ -856,17 +858,35 @@ export const AdminDashboardPage: React.FC = () => {
                 <table className="w-full text-left">
                   <thead className="bg-slate-100 text-slate-700 font-bold uppercase">
                     <tr>
-                      <th className="p-3">Product Name</th>
-                      <th className="p-3">EFDA Reg & Batch</th>
+                      <th className="p-3">Product &amp; Media</th>
+                      <th className="p-3">EFDA Reg &amp; Batch</th>
                       <th className="p-3">Expiry Date</th>
                       <th className="p-3">Pack Price</th>
                       <th className="p-3">Available Stock</th>
+                      <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-800">
                     {filteredProductsList.map((p) => (
                       <tr key={p.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-bold text-slate-900">{p.name}</td>
+                        <td className="p-3 font-bold text-slate-900 flex items-center gap-2.5">
+                          <img
+                            src={getOptimizedImageUrl(p.imageUrl, { width: 100 })}
+                            alt={p.name}
+                            className="w-9 h-9 rounded-lg object-cover border border-slate-200 shadow-2xs"
+                          />
+                          <div>
+                            <div className="line-clamp-1">{p.name}</div>
+                            {p.images && p.images.length > 1 ? (
+                              <span className="text-[10px] text-teal-700 font-semibold flex items-center gap-0.5">
+                                <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                                {p.images.length} Cloudinary Images
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-400">1 Photo Attached</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="p-3 font-mono text-[11px] text-teal-800">
                           {p.efdaRegistrationNo} (Batch #{p.batchNo})
                         </td>
@@ -884,6 +904,18 @@ export const AdminDashboardPage: React.FC = () => {
                           >
                             {p.stockQuantity.toLocaleString()} packs
                           </span>
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => {
+                              setEditingProduct(p);
+                              setIsNewProductModalOpen(true);
+                            }}
+                            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-amber-400 rounded-lg text-[11px] font-bold flex items-center gap-1 ml-auto cursor-pointer shadow-2xs"
+                          >
+                            <Tag className="w-3 h-3" />
+                            <span>Edit Media</span>
+                          </button>
                         </td>
                       </tr>
                     ))}

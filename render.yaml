@@ -1,0 +1,32 @@
+databases:
+  - name: melala-db
+    databaseName: melaladb
+    user: melala_user
+    plan: free
+    region: oregon
+
+services:
+  - type: web
+    name: melala-pharma-web
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm run build
+    preDeployCommand: npx drizzle-kit push
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: melala-db
+          property: connectionString
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

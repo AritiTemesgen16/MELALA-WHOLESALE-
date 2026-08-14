@@ -1,0 +1,668 @@
+[
+  {
+    "name": "Verification Amoxicillin 500mg",
+    "genericName": "Amoxicillin Trihydrate",
+    "category": "pharmaceuticals",
+    "brand": "Melala Pharma",
+    "manufacturer": "Cadila Healthcare",
+    "packSize": "10x10 Blister Pack",
+    "moq": 50,
+    "unitPriceEtb": 450,
+    "tieredPricing": [
+      {
+        "minQty": 100,
+        "pricePerUnitEtb": 420
+      }
+    ],
+    "efdaRegistrationNo": "EFDA-TEST-2026-99",
+    "batchNo": "BAT-2026-X99",
+    "expiryDate": "2028-12-31",
+    "coldChain": false,
+    "stockQuantity": 1000,
+    "warehouseLocation": "Section A-12",
+    "description": "Broad spectrum antibiotic capsule for B2B wholesale distribution.",
+    "storageInstructions": "Store below 30C in dry place",
+    "prescriptionRequired": true,
+    "isStrategic": true,
+    "isFeatured": true,
+    "promotionTag": "Phase 3 Verified",
+    "imageUrl": "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg",
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
+    ],
+    "id": "prod-1786631734330",
+    "sku": "MEL-SKU-4524"
+  },
+  {
+    "name": "Verification Amoxicillin 500mg",
+    "genericName": "Amoxicillin Trihydrate",
+    "category": "pharmaceuticals",
+    "brand": "Melala Pharma",
+    "manufacturer": "Cadila Healthcare",
+    "packSize": "10x10 Blister Pack",
+    "moq": 50,
+    "unitPriceEtb": 450,
+    "tieredPricing": [
+      {
+        "minQty": 100,
+        "pricePerUnitEtb": 420
+      }
+    ],
+    "efdaRegistrationNo": "EFDA-TEST-2026-99",
+    "batchNo": "BAT-2026-X99",
+    "expiryDate": "2028-12-31",
+    "coldChain": false,
+    "stockQuantity": 1000,
+    "warehouseLocation": "Section A-12",
+    "description": "Broad spectrum antibiotic capsule for B2B wholesale distribution.",
+    "storageInstructions": "Store below 30C in dry place",
+    "prescriptionRequired": true,
+    "isStrategic": true,
+    "isFeatured": true,
+    "promotionTag": "Phase 3 Verified",
+    "imageUrl": "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg",
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
+    ],
+    "id": "prod-1786631647147",
+    "sku": "MEL-SKU-8645"
+  },
+  {
+    "name": "Verification Amoxicillin 500mg (Updated Name)",
+    "genericName": "Amoxicillin Trihydrate",
+    "category": "pharmaceuticals",
+    "brand": "Melala Pharma",
+    "manufacturer": "Cadila Healthcare",
+    "packSize": "10x10 Blister Pack",
+    "moq": 50,
+    "unitPriceEtb": 450,
+    "tieredPricing": [
+      {
+        "minQty": 100,
+        "pricePerUnitEtb": 420
+      }
+    ],
+    "efdaRegistrationNo": "EFDA-TEST-2026-99",
+    "batchNo": "BAT-2026-X99",
+    "expiryDate": "2028-12-31",
+    "coldChain": false,
+    "stockQuantity": 1500,
+    "warehouseLocation": "Section A-12",
+    "description": "Broad spectrum antibiotic capsule for B2B wholesale distribution.",
+    "storageInstructions": "Store below 30C in dry place",
+    "prescriptionRequired": true,
+    "isStrategic": true,
+    "isFeatured": true,
+    "promotionTag": "Phase 3 Verified",
+    "imageUrl": "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg",
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
+    ],
+    "id": "prod-1786631598066",
+    "sku": "MEL-SKU-6195"
+  },
+  {
+    "name": "Verification Amoxicillin 500mg (Updated Name)",
+    "genericName": "Amoxicillin Trihydrate",
+    "category": "pharmaceuticals",
+    "brand": "Melala Pharma",
+    "manufacturer": "Cadila Healthcare",
+    "packSize": "10x10 Blister Pack",
+    "moq": 50,
+    "unitPriceEtb": 450,
+    "tieredPricing": [
+      {
+        "minQty": 100,
+        "pricePerUnitEtb": 420
+      }
+    ],
+    "efdaRegistrationNo": "EFDA-TEST-2026-99",
+    "batchNo": "BAT-2026-X99",
+    "expiryDate": "2028-12-31",
+    "coldChain": false,
+    "stockQuantity": 1500,
+    "warehouseLocation": "Section A-12",
+    "description": "Broad spectrum antibiotic capsule for B2B wholesale distribution.",
+    "storageInstructions": "Store below 30C in dry place",
+    "prescriptionRequired": true,
+    "isStrategic": true,
+    "isFeatured": true,
+    "promotionTag": "Phase 3 Verified",
+    "imageUrl": "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg",
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
+    ],
+    "id": "prod-1786631534756",
+    "sku": "MEL-SKU-6476"
+  },
+  {
+    "id": "prod-101",
+    "sku": "MEL-RX-001",
+    "name": "Amoxicillin Trihydrate 500mg Capsules",
+    "genericName": "Amoxicillin 500mg",
+    "category": "pharmaceuticals",
+    "brand": "Ethiopian Pharmaceuticals Mfg S.C. (EPHARM)",
+    "manufacturer": "EPHARM Ethiopia",
+    "dosageForm": "Capsule",
+    "packSize": "Box of 100 Capsules (10x10 Blisters)",
+    "moq": 10,
+    "unitPriceEtb": 480,
+    "tieredPricing": [
+      {
+        "minQuantity": 10,
+        "unitPriceEtb": 480,
+        "tierLabel": "Standard Wholesale (10-49 boxes)"
+      },
+      {
+        "minQuantity": 50,
+        "unitPriceEtb": 440,
+        "tierLabel": "Hospital Tier (50-199 boxes)"
+      },
+      {
+        "minQuantity": 200,
+        "unitPriceEtb": 395,
+        "tierLabel": "Bulk Distributor Tier (200+ boxes)"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/DR/2023/1082",
+    "batchNo": "AMX-2025-089",
+    "expiryDate": "2028-04-15",
+    "coldChain": false,
+    "stockQuantity": 4500,
+    "warehouseLocation": "Central Depot Addis Ababa - Row 3A",
+    "description": "Broad-spectrum beta-lactam antibiotic for upper respiratory tract infections, otitis media, and skin infections.",
+    "storageInstructions": "Store below 25°C in a dry place protected from light.",
+    "prescriptionRequired": true,
+    "isStrategic": true,
+    "isFeatured": true,
+    "promotionTag": "8% Bulk Discount Campaign",
+    "imageUrl": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-102",
+    "sku": "MEL-RX-002",
+    "name": "Paracetamol 500mg Tablets (WHO Essential Grade)",
+    "genericName": "Paracetamol / Acetaminophen 500mg",
+    "category": "pharmaceuticals",
+    "brand": "Ethiopian Pharmaceuticals Mfg S.C. (EPHARM)",
+    "manufacturer": "EPHARM Ethiopia",
+    "dosageForm": "Tablet",
+    "packSize": "Box of 1000 Tablets (Bulk Dispensing Pack)",
+    "moq": 5,
+    "unitPriceEtb": 850,
+    "tieredPricing": [
+      {
+        "minQuantity": 5,
+        "unitPriceEtb": 850,
+        "tierLabel": "Standard Wholesale"
+      },
+      {
+        "minQuantity": 30,
+        "unitPriceEtb": 780,
+        "tierLabel": "Clinic / Hospital Tier"
+      },
+      {
+        "minQuantity": 100,
+        "unitPriceEtb": 710,
+        "tierLabel": "Bulk Wholesaler Tier"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/DR/2022/0411",
+    "batchNo": "PAR-2025-114",
+    "expiryDate": "2028-09-30",
+    "coldChain": false,
+    "stockQuantity": 8200,
+    "warehouseLocation": "Central Depot Addis Ababa - Row 1B",
+    "description": "Fast-acting analgesic and antipyretic for mild-to-moderate pain and fever reduction.",
+    "storageInstructions": "Store in well-closed containers below 30°C.",
+    "prescriptionRequired": false,
+    "isStrategic": true,
+    "imageUrl": "https://images.unsplash.com/photo-1550572017-edf792891368?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-103",
+    "sku": "MEL-RX-003",
+    "name": "Ceftriaxone Sodium 1g Powder for Injection",
+    "genericName": "Ceftriaxone 1g IV/IM Vial",
+    "category": "pharmaceuticals",
+    "brand": "SinoPharm International",
+    "manufacturer": "SinoPharm China",
+    "dosageForm": "Injectable Powder + Diluent",
+    "packSize": "Box of 50 Vials with Water for Injection",
+    "moq": 4,
+    "unitPriceEtb": 3200,
+    "tieredPricing": [
+      {
+        "minQuantity": 4,
+        "unitPriceEtb": 3200,
+        "tierLabel": "Standard (4-19 boxes)"
+      },
+      {
+        "minQuantity": 20,
+        "unitPriceEtb": 2950,
+        "tierLabel": "Hospital Tier (20+ boxes)"
+      },
+      {
+        "minQuantity": 100,
+        "unitPriceEtb": 2680,
+        "tierLabel": "Key Account Bulk"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/DR/2024/0091",
+    "batchNo": "CEF-2025-701",
+    "expiryDate": "2027-11-20",
+    "coldChain": false,
+    "stockQuantity": 1200,
+    "warehouseLocation": "Central Depot Addis Ababa - Row 4C",
+    "description": "Third-generation cephalosporin antibiotic for severe hospital infections, pneumonia, and sepsis.",
+    "storageInstructions": "Protect from light. Store powder below 25°C.",
+    "prescriptionRequired": true,
+    "isStrategic": true,
+    "imageUrl": "https://images.unsplash.com/photo-1579165466741-7f35e4755660?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-104",
+    "sku": "MEL-RX-004",
+    "name": "Insulin Glargine 100 IU/ml Prefilled Pen (100u/ml)",
+    "genericName": "Insulin Glargine Long-Acting 3ml",
+    "category": "pharmaceuticals",
+    "brand": "Cadila Pharmaceuticals",
+    "manufacturer": "Cadila Healthcare Ltd",
+    "dosageForm": "Subcutaneous Pen Injector",
+    "packSize": "Pack of 5 Disposable Pens (3ml each)",
+    "moq": 2,
+    "unitPriceEtb": 4200,
+    "tieredPricing": [
+      {
+        "minQuantity": 2,
+        "unitPriceEtb": 4200,
+        "tierLabel": "Standard Pharmacy"
+      },
+      {
+        "minQuantity": 10,
+        "unitPriceEtb": 3880,
+        "tierLabel": "Hospital / Diabetes Center"
+      },
+      {
+        "minQuantity": 50,
+        "unitPriceEtb": 3500,
+        "tierLabel": "Regional Wholesaler"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/DR/2023/2144",
+    "batchNo": "INS-2025-882",
+    "expiryDate": "2026-10-15",
+    "coldChain": true,
+    "stockQuantity": 450,
+    "warehouseLocation": "Cold Storage Depot Kaliti - Cold Bay #2",
+    "description": "Recombinant long-acting basal insulin analog for glycemic control in diabetes mellitus type 1 & 2.",
+    "storageInstructions": "CRITICAL COLD CHAIN: Store between 2°C to 8°C. Do not freeze.",
+    "prescriptionRequired": true,
+    "isStrategic": true,
+    "imageUrl": "https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-105",
+    "sku": "MEL-RX-005",
+    "name": "Ringer Lactate Infusion 500ml IV Solution",
+    "genericName": "Compound Sodium Lactate Intravenous Infusion",
+    "category": "pharmaceuticals",
+    "brand": "SinoPharm International",
+    "manufacturer": "SinoPharm IV Solutions",
+    "dosageForm": "IV Infusion Bag",
+    "packSize": "Carton of 20 Infusion Bags (500ml)",
+    "moq": 5,
+    "unitPriceEtb": 1100,
+    "tieredPricing": [
+      {
+        "minQuantity": 5,
+        "unitPriceEtb": 1100,
+        "tierLabel": "Standard Carton"
+      },
+      {
+        "minQuantity": 25,
+        "unitPriceEtb": 980,
+        "tierLabel": "Hospital Emergency Unit Tier"
+      },
+      {
+        "minQuantity": 100,
+        "unitPriceEtb": 890,
+        "tierLabel": "Bulk Pallet Order"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/DR/2021/0802",
+    "batchNo": "RL-2025-903",
+    "expiryDate": "2028-06-30",
+    "coldChain": false,
+    "stockQuantity": 3100,
+    "warehouseLocation": "Adama Distribution Center - Pallet Bay 8",
+    "description": "Essential crystalloid fluid replacement solution for surgical trauma, severe dehydration, and burns.",
+    "storageInstructions": "Store below 30°C. Do not use if bag leaks or solution is cloudy.",
+    "prescriptionRequired": true,
+    "isStrategic": false,
+    "imageUrl": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-201",
+    "sku": "MEL-SUP-001",
+    "name": "Sterile Surgical Gloves Powder-Free (Size 7.5)",
+    "genericName": "Surgical Latex Gloves Powder-Free",
+    "category": "medical-supplies",
+    "brand": "B. Braun Medical",
+    "manufacturer": "B. Braun Surgical Malaysia",
+    "dosageForm": "Pair Packaging",
+    "packSize": "Box of 50 Pairs (Individually Wrapped Sterile Pairs)",
+    "moq": 5,
+    "unitPriceEtb": 1650,
+    "tieredPricing": [
+      {
+        "minQuantity": 5,
+        "unitPriceEtb": 1650,
+        "tierLabel": "Standard Wholesale"
+      },
+      {
+        "minQuantity": 20,
+        "unitPriceEtb": 1480,
+        "tierLabel": "Operating Theater Tier"
+      },
+      {
+        "minQuantity": 100,
+        "unitPriceEtb": 1320,
+        "tierLabel": "Master Wholesaler"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/MD/2023/5012",
+    "batchNo": "GLV-2025-332",
+    "expiryDate": "2029-01-15",
+    "coldChain": false,
+    "stockQuantity": 1500,
+    "warehouseLocation": "Central Depot Addis Ababa - Bay M1",
+    "description": "Ergonomic sterile latex surgical gloves with high tactile sensitivity and textured micro-grip.",
+    "storageInstructions": "Store in cool dry conditions away from direct sunlight and ozone.",
+    "prescriptionRequired": false,
+    "isStrategic": true,
+    "imageUrl": "https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-202",
+    "sku": "MEL-SUP-002",
+    "name": "Disposable Syringes 5ml with 21G Luer Lock Needle",
+    "genericName": "Hypodermic Syringe 5ml Sterile",
+    "category": "medical-supplies",
+    "brand": "B. Braun Medical",
+    "manufacturer": "B. Braun Shanghai",
+    "dosageForm": "Single-Use Device",
+    "packSize": "Box of 100 Units (Sterile Blister Packed)",
+    "moq": 10,
+    "unitPriceEtb": 650,
+    "tieredPricing": [
+      {
+        "minQuantity": 10,
+        "unitPriceEtb": 650,
+        "tierLabel": "Standard Box"
+      },
+      {
+        "minQuantity": 50,
+        "unitPriceEtb": 580,
+        "tierLabel": "Clinic Supply Pack"
+      },
+      {
+        "minQuantity": 200,
+        "unitPriceEtb": 520,
+        "tierLabel": "Regional Distributor Bulk"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/MD/2022/1109",
+    "batchNo": "SYR-2025-019",
+    "expiryDate": "2029-08-31",
+    "coldChain": false,
+    "stockQuantity": 9500,
+    "warehouseLocation": "Central Depot Addis Ababa - Bay M2",
+    "description": "Clear barrel hypodermic syringe with smooth plunger movement and bold scale markings.",
+    "storageInstructions": "Single use only. Do not use if individual blister seal is damaged.",
+    "prescriptionRequired": false,
+    "isStrategic": false,
+    "imageUrl": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-203",
+    "sku": "MEL-SUP-003",
+    "name": "Malaria Pf/Pv Antigen Rapid Diagnostic Test Kit (RDT)",
+    "genericName": "Rapid Malaria Whole Blood Diagnostic Device",
+    "category": "medical-supplies",
+    "brand": "Cadila Pharmaceuticals",
+    "manufacturer": "Cadila Diagnostics",
+    "dosageForm": "Cassette Kit",
+    "packSize": "Box of 25 Test Cassettes (Includes Buffer & Lancets)",
+    "moq": 4,
+    "unitPriceEtb": 1950,
+    "tieredPricing": [
+      {
+        "minQuantity": 4,
+        "unitPriceEtb": 1950,
+        "tierLabel": "Standard Box"
+      },
+      {
+        "minQuantity": 20,
+        "unitPriceEtb": 1750,
+        "tierLabel": "Community Health Program"
+      },
+      {
+        "minQuantity": 80,
+        "unitPriceEtb": 1580,
+        "tierLabel": "Bulk NGO & Regional Hospital"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/IVD/2024/0023",
+    "batchNo": "MAL-2025-412",
+    "expiryDate": "2027-05-15",
+    "coldChain": false,
+    "stockQuantity": 2800,
+    "warehouseLocation": "Hawassa Hub - Section 2",
+    "description": "Immuno-chromatographic test for simultaneous detection of P. falciparum and P. vivax antigens in human whole blood.",
+    "storageInstructions": "Store between 4°C and 30°C. Do not freeze cassettes.",
+    "prescriptionRequired": false,
+    "isStrategic": true,
+    "imageUrl": "https://images.unsplash.com/photo-1579165466741-7f35e4755660?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-301",
+    "sku": "MEL-EQP-001",
+    "name": "Mindray uMEC10 5-Para Patient Monitor 10.4\" Display",
+    "genericName": "Vital Signs Multi-Parameter Monitor",
+    "category": "medical-equipment",
+    "brand": "Mindray Healthcare Systems",
+    "manufacturer": "Mindray Bio-Medical Electronics",
+    "dosageForm": "Medical Device Unit",
+    "packSize": "1 Unit Complete Set (ECG, SpO2, NIBP, Temp, Resp)",
+    "moq": 1,
+    "unitPriceEtb": 145000,
+    "tieredPricing": [
+      {
+        "minQuantity": 1,
+        "unitPriceEtb": 145000,
+        "tierLabel": "Single Unit Hospital Price"
+      },
+      {
+        "minQuantity": 3,
+        "unitPriceEtb": 136000,
+        "tierLabel": "ICU / Ward Bundle (3+ units)"
+      },
+      {
+        "minQuantity": 10,
+        "unitPriceEtb": 125000,
+        "tierLabel": "Healthcare Network Procurement"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/EQ/2023/0410",
+    "batchNo": "MDR-2025-991",
+    "expiryDate": "2035-12-31",
+    "coldChain": false,
+    "stockQuantity": 18,
+    "warehouseLocation": "Central Depot Addis Ababa - Equipment Showroom",
+    "description": "Compact 10.4-inch color touchscreen patient monitor with advanced ECG analysis, anti-interference SpO2, and 120-hour trend data.",
+    "storageInstructions": "Store in climate-controlled indoor environment 10°C to 40°C.",
+    "prescriptionRequired": false,
+    "isStrategic": true,
+    "imageUrl": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-302",
+    "sku": "MEL-EQP-002",
+    "name": "Tabletop Bench Autoclave Sterilizer 24 Liter Digital",
+    "genericName": "Steam Pressure Sterilizer 24L",
+    "category": "medical-equipment",
+    "brand": "Mindray Healthcare Systems",
+    "manufacturer": "Mindray Equipment Division",
+    "dosageForm": "Equipment Unit",
+    "packSize": "1 Complete Unit with Stainless Trays",
+    "moq": 1,
+    "unitPriceEtb": 98000,
+    "tieredPricing": [
+      {
+        "minQuantity": 1,
+        "unitPriceEtb": 98000,
+        "tierLabel": "Standard Unit"
+      },
+      {
+        "minQuantity": 3,
+        "unitPriceEtb": 92000,
+        "tierLabel": "Clinic Network Pack"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/EQ/2022/9021",
+    "batchNo": "AUT-2025-104",
+    "expiryDate": "2035-12-31",
+    "coldChain": false,
+    "stockQuantity": 12,
+    "warehouseLocation": "Central Depot Addis Ababa - Heavy Equipment Bay",
+    "description": "Class B automatic steam autoclave with micro-processor temperature control for surgical tools and lab glassware.",
+    "storageInstructions": "Operate with distilled water only.",
+    "prescriptionRequired": false,
+    "isStrategic": false,
+    "imageUrl": "https://images.unsplash.com/photo-1579165466741-7f35e4755660?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-401",
+    "sku": "MEL-COS-001",
+    "name": "Melala PureCare Dermatological Hydrating Cream 250ml",
+    "genericName": "Ceramide Barrier Restorative Cream",
+    "category": "cosmetics",
+    "brand": "Melala PureCare",
+    "manufacturer": "Melala Healthcare Formulation Facility",
+    "dosageForm": "Topical Cream",
+    "packSize": "Box of 12 Bottles (250ml Pump Dispenser)",
+    "moq": 3,
+    "unitPriceEtb": 2400,
+    "tieredPricing": [
+      {
+        "minQuantity": 3,
+        "unitPriceEtb": 2400,
+        "tierLabel": "Standard Wholesale"
+      },
+      {
+        "minQuantity": 10,
+        "unitPriceEtb": 2150,
+        "tierLabel": "Dermatology Clinic / Retailer"
+      },
+      {
+        "minQuantity": 50,
+        "unitPriceEtb": 1900,
+        "tierLabel": "Pharmacy Chain Bulk"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/CS/2024/0119",
+    "batchNo": "MPC-2025-802",
+    "expiryDate": "2027-10-31",
+    "coldChain": false,
+    "stockQuantity": 1800,
+    "warehouseLocation": "Central Depot Addis Ababa - Bay D1",
+    "description": "Dermatologically tested barrier cream enriched with Ceramides, Hyaluronic Acid, and Shea Butter for sensitive or eczema-prone skin.",
+    "storageInstructions": "Store below 25°C. Keep away from direct sunlight.",
+    "prescriptionRequired": false,
+    "isStrategic": true,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-501",
+    "sku": "MEL-PC-001",
+    "name": "Chlorhexidine Gluconate 4% Antiseptic Skin Cleanser 500ml",
+    "genericName": "Surgical Scrub Chlorhexidine 4%",
+    "category": "personal-care",
+    "brand": "Ethiopian Pharmaceuticals Mfg S.C. (EPHARM)",
+    "manufacturer": "EPHARM Hygiene",
+    "dosageForm": "Liquid Antiseptic Solution",
+    "packSize": "Carton of 20 Bottles (500ml with Pump)",
+    "moq": 2,
+    "unitPriceEtb": 2100,
+    "tieredPricing": [
+      {
+        "minQuantity": 2,
+        "unitPriceEtb": 2100,
+        "tierLabel": "Standard Carton"
+      },
+      {
+        "minQuantity": 10,
+        "unitPriceEtb": 1890,
+        "tierLabel": "Operating Room Supply"
+      },
+      {
+        "minQuantity": 50,
+        "unitPriceEtb": 1680,
+        "tierLabel": "Bulk Distributor"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/PC/2023/1102",
+    "batchNo": "CHX-2025-220",
+    "expiryDate": "2028-03-31",
+    "coldChain": false,
+    "stockQuantity": 2400,
+    "warehouseLocation": "Adama Distribution Center - Bay H3",
+    "description": "Hospital-grade antimicrobial scrub for surgical hand preparation and pre-operative patient skin cleansing.",
+    "storageInstructions": "Store below 30°C in well-sealed bottles.",
+    "prescriptionRequired": false,
+    "isStrategic": false,
+    "imageUrl": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "prod-601",
+    "sku": "MEL-NUT-001",
+    "name": "Oral Rehydration Salts (ORS) WHO Standard Formula",
+    "genericName": "Glucose Electrolyte Rehydration Powder",
+    "category": "other-healthcare",
+    "brand": "Ethiopian Pharmaceuticals Mfg S.C. (EPHARM)",
+    "manufacturer": "EPHARM Ethiopia",
+    "dosageForm": "Effervescent Sachet",
+    "packSize": "Box of 100 Sachets (20.5g per sachet for 1L water)",
+    "moq": 5,
+    "unitPriceEtb": 950,
+    "tieredPricing": [
+      {
+        "minQuantity": 5,
+        "unitPriceEtb": 950,
+        "tierLabel": "Standard Box"
+      },
+      {
+        "minQuantity": 25,
+        "unitPriceEtb": 840,
+        "tierLabel": "Health Post & Clinic Pack"
+      },
+      {
+        "minQuantity": 100,
+        "unitPriceEtb": 750,
+        "tierLabel": "National Supply Program"
+      }
+    ],
+    "efdaRegistrationNo": "EFDA/NT/2022/0052",
+    "batchNo": "ORS-2025-502",
+    "expiryDate": "2028-12-31",
+    "coldChain": false,
+    "stockQuantity": 6500,
+    "warehouseLocation": "Central Depot Addis Ababa - Bay N1",
+    "description": "WHO low-osmolar formula oral rehydration salts for acute diarrhea and electrolyte recovery in adults and children.",
+    "storageInstructions": "Store sachets in dry place below 30°C.",
+    "prescriptionRequired": false,
+    "isStrategic": true,
+    "imageUrl": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80"
+  }
+]

@@ -1,4 +1,49 @@
-import { Product, UserProfile, QuotationRequest, WholesaleOrder, CustomerLead, Brand, Promotion, CallbackRequest, DemandInsight } from '../types';
+import { Product, UserProfile, QuotationRequest, WholesaleOrder, CustomerLead, Brand, Promotion, CallbackRequest, DemandInsight, CategoryInfo } from '../types';
+
+export const INITIAL_CATEGORIES: CategoryInfo[] = [
+  {
+    id: 'pharmaceuticals',
+    name: 'Pharmaceutical Medicines',
+    description: 'EFDA WHO-GMP certified essential prescription medicines, antibiotics, and IV formulations.',
+    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80',
+    productCount: 142,
+  },
+  {
+    id: 'medical-supplies',
+    name: 'Medical & Surgical Supplies',
+    description: 'Sterile surgical consumables, IV cannulas, PPE, syringes, and clinical diagnostics.',
+    imageUrl: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80',
+    productCount: 95,
+  },
+  {
+    id: 'medical-equipment',
+    name: 'Medical Equipment & ICU',
+    description: 'Hospital equipment, patient monitors, diagnostic ultrasound, and cold-chain refrigerators.',
+    imageUrl: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
+    productCount: 38,
+  },
+  {
+    id: 'cosmetics',
+    name: 'Cosmetics & Clinical Dermatology',
+    description: 'Dermatological skincare, clinical treatments, therapeutic soaps, and moisturizing creams.',
+    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
+    productCount: 44,
+  },
+  {
+    id: 'personal-care',
+    name: 'Personal Care & Hygiene',
+    description: 'Antiseptics, clinical hygiene, sanitizers, oral care, and personal wellness essentials.',
+    imageUrl: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
+    productCount: 52,
+  },
+  {
+    id: 'other-healthcare',
+    name: 'Other Healthcare & Nutrition',
+    description: 'Therapeutic supplements, clinical nutrition, baby care, and diagnostic kits.',
+    imageUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=600&q=80',
+    productCount: 29,
+  },
+];
 
 export const INITIAL_BRANDS: Brand[] = [
   {

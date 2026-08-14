@@ -43,6 +43,15 @@ export interface Product {
   isFeatured?: boolean; // Featured strategic product banner
   promotionTag?: string; // e.g., "10% Bulk Discount", "Seasonal Offer"
   imageUrl: string;
+  images?: string[]; // Gallery of Cloudinary image URLs (up to 5 images)
+}
+
+export interface CategoryInfo {
+  id: ProductCategory;
+  name: string;
+  description: string;
+  imageUrl: string;
+  productCount?: number;
 }
 
 export interface CartItem {

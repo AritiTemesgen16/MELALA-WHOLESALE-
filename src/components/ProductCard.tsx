@@ -1,15 +1,17 @@
 import React from 'react';
 import { Product } from '../types';
 import { useApp } from '../context/AppContext';
-import { ShieldCheck, Snowflake, AlertCircle, ShoppingBag, Eye, Heart, Layers, Check } from 'lucide-react';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
+import { ShieldCheck, Snowflake, AlertCircle, ShoppingBag, Eye, Heart, Layers, Check, Edit3, Image as ImageIcon } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addToCart, setSelectedProductId, setCurrentPage, favorites, toggleFavorite } = useApp();
+  const { addToCart, setSelectedProductId, setCurrentPage, favorites, toggleFavorite, currentRole, setEditingProduct, setIsNewProductModalOpen } = useApp();
   const isFav = favorites.includes(product.id);
+  const imageCount = product.images && product.images.length > 0 ? product.images.length : 1;
 
   const formatMoney = (val: number) => `${val.toLocaleString()} ETB`;
 
@@ -30,18 +32,34 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleFavorite(product.id);
-          }}
-          className={`p-1.5 rounded-full shadow-xs backdrop-blur-md transition-all pointer-events-auto cursor-pointer ${
-            isFav ? 'bg-rose-50 text-rose-600' : 'bg-white/90 text-slate-400 hover:text-slate-700'
-          }`}
-          title="Save to Facility Favorites"
-        >
-          <Heart className={`w-4 h-4 ${isFav ? 'fill-rose-600' : ''}`} />
-        </button>
+        <div className="flex items-center gap-1.5 pointer-events-auto">
+          {currentRole === 'admin' && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingProduct(product);
+                setIsNewProductModalOpen(true);
+              }}
+              className="p-1.5 bg-slate-900/80 hover:bg-slate-900 text-amber-400 rounded-full shadow-xs backdrop-blur-md transition-all cursor-pointer"
+              title="Edit Product Media & Cloudinary Gallery"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(product.id);
+            }}
+            className={`p-1.5 rounded-full shadow-xs backdrop-blur-md transition-all cursor-pointer ${
+              isFav ? 'bg-rose-50 text-rose-600' : 'bg-white/90 text-slate-400 hover:text-slate-700'
+            }`}
+            title="Save to Facility Favorites"
+          >
+            <Heart className={`w-4 h-4 ${isFav ? 'fill-rose-600' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Image Banner */}
@@ -53,15 +71,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         className="h-44 bg-slate-100 overflow-hidden relative cursor-pointer group-hover:opacity-95 transition-opacity"
       >
         <img
-          src={product.imageUrl}
+          src={getOptimizedImageUrl(product.imageUrl, { width: 500 })}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           referrerPolicy="no-referrer"
         />
+
         <div className="absolute bottom-2 left-2 bg-slate-900/80 text-slate-100 text-[10px] font-mono px-2 py-0.5 rounded backdrop-blur-xs flex items-center gap-1">
           <ShieldCheck className="w-3 h-3 text-teal-400" />
           <span>{product.efdaRegistrationNo}</span>
         </div>
+
+        {imageCount > 1 && (
+          <div className="absolute bottom-2 right-2 bg-slate-900/80 text-slate-200 text-[10px] font-semibold px-2 py-0.5 rounded backdrop-blur-xs flex items-center gap-1">
+            <ImageIcon className="w-3 h-3 text-amber-400" />
+            <span>{imageCount} Photos</span>
+          </div>
+        )}
       </div>
 
       {/* Card Content */}
