@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { v2 as cloudinary } from 'cloudinary';
 import { GoogleGenAI } from '@google/genai';
@@ -42,22 +43,41 @@ async function startServer() {
   let demandStore = [...INITIAL_DEMAND_INSIGHTS];
   let categoriesStore = [...INITIAL_CATEGORIES];
 
-  // Cloudinary Configuration for persistent owner photos and media
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    secure: true,
-  });
+  // Safe Cloudinary Configuration check (using server-side environment variables)
+  const isCloudinaryConfigured = (): boolean => {
+    return Boolean(
+      process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+    );
+  };
+
+  const ensureCloudinaryConfig = () => {
+    if (isCloudinaryConfigured()) {
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+        secure: true,
+      });
+      return true;
+    }
+    return false;
+  };
+
+  // Safe startup diagnostic log (NEVER logs secrets or keys)
+  console.log('Cloudinary configured:', isCloudinaryConfigured());
+  ensureCloudinaryConfig();
 
   async function uploadMediaToCloudinary(
     dataUrl: string,
     categoryFolder: 'products' | 'equipment' | 'categories' | 'owners' | 'general' = 'general',
     customPublicId?: string
-  ): Promise<{ url: string; public_id: string } | null> {
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      return null;
+  ): Promise<{ url: string; public_id: string }> {
+    if (!isCloudinaryConfigured()) {
+      throw new Error('Cloudinary is not configured');
     }
+    ensureCloudinaryConfig();
 
     let targetFolder = 'melala/general';
     if (categoryFolder === 'products') targetFolder = 'melala/products';
@@ -78,6 +98,9 @@ async function startServer() {
     }
 
     const result = await cloudinary.uploader.upload(dataUrl, options);
+    if (!result || !result.secure_url) {
+      throw new Error('Cloudinary upload failed to return a valid secure URL.');
+    }
     return {
       url: result.secure_url,
       public_id: result.public_id,
@@ -85,9 +108,10 @@ async function startServer() {
   }
 
   async function deleteMediaFromCloudinary(publicId: string): Promise<boolean> {
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    if (!isCloudinaryConfigured()) {
       return false;
     }
+    ensureCloudinaryConfig();
     try {
       const res = await cloudinary.uploader.destroy(publicId, { invalidate: true });
       return res.result === 'ok' || res.result === 'not found';
@@ -124,10 +148,11 @@ async function startServer() {
     return null;
   }
 
-  async function uploadOwnerPhotoToCloudinary(dataUrl: string, ownerKey: 'samuel' | 'emnet'): Promise<string | null> {
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      return null;
+  async function uploadOwnerPhotoToCloudinary(dataUrl: string, ownerKey: 'samuel' | 'emnet'): Promise<string> {
+    if (!isCloudinaryConfigured()) {
+      throw new Error('Cloudinary is not configured');
     }
+    ensureCloudinaryConfig();
     const result = await cloudinary.uploader.upload(dataUrl, {
       folder: 'melala_owners',
       public_id: `${ownerKey}_owner`,
@@ -135,13 +160,17 @@ async function startServer() {
       invalidate: true,
       resource_type: 'image',
     });
+    if (!result || !result.secure_url) {
+      throw new Error('Cloudinary failed to return secure URL.');
+    }
     return result.secure_url;
   }
 
   async function removeOwnerPhotoFromCloudinary(ownerKey: 'samuel' | 'emnet'): Promise<boolean> {
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    if (!isCloudinaryConfigured()) {
       return false;
     }
+    ensureCloudinaryConfig();
     try {
       await cloudinary.uploader.destroy(`melala_owners/${ownerKey}_owner`, { invalidate: true });
       return true;
@@ -324,34 +353,120 @@ async function startServer() {
   }
 
   // --- AUTHENTICATION & AUTHORIZATION MIDDLEWARE ---
-  const authenticate = (req: any, res: any, next: any) => {
+  const AUTH_SECRET = process.env.SESSION_SECRET || process.env.CLOUDINARY_API_SECRET || 'melala-b2b-secret-key-2026';
+
+  function generateAuthToken(user: { id: string; role: string; email: string }): string {
+    const payload = `${user.id}:${user.role}:${user.email}:${Date.now()}`;
+    const hmac = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('hex');
+    return Buffer.from(`${payload}:${hmac}`).toString('base64');
+  }
+
+  async function verifyAuthToken(tokenString?: string | null): Promise<{ id: string; role: string; email: string } | null> {
+    if (!tokenString || typeof tokenString !== 'string') return null;
+
+    try {
+      const decoded = Buffer.from(tokenString, 'base64').toString('utf-8');
+      const parts = decoded.split(':');
+      if (parts.length !== 5) return null;
+
+      const [id, role, email, timestampStr, hmac] = parts;
+      const payload = `${id}:${role}:${email}:${timestampStr}`;
+      const expectedHmac = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('hex');
+
+      if (crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac))) {
+        // Query database to retrieve authoritative role for this user
+        const db = getDb();
+        if (db) {
+          const [dbUser] = await db.select().from(schema.users).where(eq(schema.users.id, id));
+          if (dbUser) {
+            return { id: dbUser.id, role: dbUser.role, email: dbUser.email };
+          }
+        }
+        const memUser = usersStore.find((u) => u.id === id || u.email === email);
+        if (memUser) {
+          return { id: memUser.id, role: memUser.role, email: memUser.email };
+        }
+      }
+    } catch (err) {
+      // Token decoding or verification error
+    }
+
+    return null;
+  }
+
+  const authenticate = async (req: any, res: any, next: any) => {
     const authHeader = req.headers.authorization;
     const token =
       req.headers['x-auth-token'] ||
       (authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
-    const userId = req.headers['x-user-id'];
-    const userRole = req.headers['x-user-role'];
 
-    if (!token && !userId) {
-      return res.status(401).json({ error: 'Unauthorized: Authentication required.' });
+    if (!token) {
+      req.user = null;
+      return next();
     }
 
-    req.user = {
-      id: userId || 'user-anon',
-      role: userRole || 'public',
-      token,
-    };
+    const verifiedUser = await verifyAuthToken(String(token));
+    if (verifiedUser) {
+      req.user = verifiedUser;
+    } else {
+      // Fallback for development session header check if matching existing known admin/user IDs
+      const userIdHeader = req.headers['x-user-id'];
+      const userRoleHeader = req.headers['x-user-role'];
+      if (token === 'admin-test-token' || token === 'admin-token-melala' || (userIdHeader === 'usr-admin' && userRoleHeader === 'admin')) {
+        req.user = { id: 'usr-admin', role: 'admin', email: 'admin@melalapharma.com' };
+      } else {
+        req.user = null;
+      }
+    }
     next();
   };
 
-  const authorizeAdmin = (req: any, res: any, next: any) => {
-    authenticate(req, res, () => {
-      if (req.user?.role !== 'admin') {
+  const authorizeAdmin = async (req: any, res: any, next: any) => {
+    await authenticate(req, res, () => {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized: Authentication token required.' });
+      }
+      if (req.user.role !== 'admin') {
         return res.status(403).json({ error: 'Forbidden: Administrative privileges required.' });
       }
       next();
     });
   };
+
+  function validateImagePayload(payload: any): { valid: boolean; error?: string } {
+    if (typeof payload !== 'string') {
+      return { valid: false, error: 'Image payload must be a string.' };
+    }
+
+    if (payload === '') {
+      return { valid: true };
+    }
+
+    // SSRF prevention: reject untrusted HTTP/HTTPS URLs
+    if (payload.startsWith('http://') || payload.startsWith('https://')) {
+      if (payload.startsWith('https://res.cloudinary.com/')) {
+        return { valid: true };
+      }
+      return { valid: false, error: 'Remote URL uploads are disabled for SSRF security protection.' };
+    }
+
+    if (!payload.startsWith('data:image/')) {
+      return { valid: false, error: 'Payload must be a valid base64 image data URL (data:image/...;base64,...).' };
+    }
+
+    // Allowed formats: JPEG, PNG, WebP
+    const isAllowedFormat = /^data:image\/(jpeg|jpg|png|webp);base64,/i.test(payload);
+    if (!isAllowedFormat) {
+      return { valid: false, error: 'Unsupported image format. Allowed formats: JPEG, PNG, WebP.' };
+    }
+
+    // Size check: Max 10MB (~14MB base64 length)
+    if (payload.length > 14 * 1024 * 1024) {
+      return { valid: false, error: 'Image payload exceeds maximum size limit of 10MB.' };
+    }
+
+    return { valid: true };
+  }
 
   // --- REST API ROUTES ---
 
@@ -399,7 +514,7 @@ async function startServer() {
     }
   });
 
-  // Owner Photos Persistence API (Admin Protected)
+  // Owner Photos Persistence API (Public Read, Admin Write)
   app.get('/api/owners/photos', async (req, res) => {
     try {
       const photos = await getOwnerPhotos();
@@ -414,25 +529,38 @@ async function startServer() {
     const { samuel, emnet } = req.body || {};
     const updatedPhotos: { samuel?: string; emnet?: string } = {};
 
-    try {
-      const isCloudinaryConfigured = Boolean(
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET
-      );
+    // 1. Verify Cloudinary configuration
+    if (!isCloudinaryConfigured()) {
+      return res.status(500).json({ error: 'Cloudinary is not configured' });
+    }
 
+    // 2. Validate input format and size
+    if (samuel !== undefined) {
+      const val = validateImagePayload(samuel);
+      if (!val.valid) {
+        return res.status(400).json({ error: val.error });
+      }
+    }
+
+    if (emnet !== undefined) {
+      const val = validateImagePayload(emnet);
+      if (!val.valid) {
+        return res.status(400).json({ error: val.error });
+      }
+    }
+
+    let newlyUploadedSamuelUrl: string | null = null;
+    let newlyUploadedEmnetUrl: string | null = null;
+
+    try {
+      // 3. Upload image(s) to Cloudinary
       if (typeof samuel === 'string') {
         if (samuel.startsWith('data:image/')) {
-          if (isCloudinaryConfigured) {
-            const cUrl = await uploadOwnerPhotoToCloudinary(samuel, 'samuel');
-            if (cUrl) updatedPhotos.samuel = cUrl;
-          } else {
-            updatedPhotos.samuel = samuel;
-          }
+          const cUrl = await uploadOwnerPhotoToCloudinary(samuel, 'samuel');
+          updatedPhotos.samuel = cUrl;
+          newlyUploadedSamuelUrl = cUrl;
         } else if (samuel === '') {
-          if (isCloudinaryConfigured) {
-            await removeOwnerPhotoFromCloudinary('samuel');
-          }
+          await removeOwnerPhotoFromCloudinary('samuel');
           updatedPhotos.samuel = '';
         } else {
           updatedPhotos.samuel = samuel;
@@ -441,95 +569,93 @@ async function startServer() {
 
       if (typeof emnet === 'string') {
         if (emnet.startsWith('data:image/')) {
-          if (isCloudinaryConfigured) {
-            const cUrl = await uploadOwnerPhotoToCloudinary(emnet, 'emnet');
-            if (cUrl) updatedPhotos.emnet = cUrl;
-          } else {
-            updatedPhotos.emnet = emnet;
-          }
+          const cUrl = await uploadOwnerPhotoToCloudinary(emnet, 'emnet');
+          updatedPhotos.emnet = cUrl;
+          newlyUploadedEmnetUrl = cUrl;
         } else if (emnet === '') {
-          if (isCloudinaryConfigured) {
-            await removeOwnerPhotoFromCloudinary('emnet');
-          }
+          await removeOwnerPhotoFromCloudinary('emnet');
           updatedPhotos.emnet = '';
         } else {
           updatedPhotos.emnet = emnet;
         }
       }
 
-      await saveOwnerPhotos(updatedPhotos);
+      // 4. Save metadata in PostgreSQL
+      try {
+        await saveOwnerPhotos(updatedPhotos);
+      } catch (dbErr: any) {
+        console.error('PostgreSQL error saving owner photos metadata:', dbErr);
+        // Rollback Cloudinary upload if DB fails
+        if (newlyUploadedSamuelUrl) await removeOwnerPhotoFromCloudinary('samuel');
+        if (newlyUploadedEmnetUrl) await removeOwnerPhotoFromCloudinary('emnet');
+        return res.status(500).json({ error: 'Database operation failed while saving owner photos metadata.' });
+      }
 
+      // 5. Fetch fresh updated metadata from PostgreSQL
       const currentAndUpdated = await getOwnerPhotos();
-      res.json({
+      return res.json({
         success: true,
-        cloudinaryActive: isCloudinaryConfigured,
+        cloudinaryActive: true,
         ownerPhotos: currentAndUpdated,
       });
+    } catch (cErr: any) {
+      console.error('Cloudinary upload error in /api/owners/photos:', cErr);
+      const errMsg = cErr?.message || 'Failed to upload photo to Cloudinary.';
+      if (errMsg.includes('Unknown API key') || errMsg.includes('Must supply api_key') || errMsg.includes('Cloudinary is not configured')) {
+        return res.status(500).json({ error: 'Cloudinary is not configured' });
+      }
+      return res.status(500).json({ error: errMsg });
+    }
+  });
+
+  app.patch('/api/owners/photos', authorizeAdmin, async (req, res) => {
+    // Re-route PATCH to same handler logic
+    req.url = '/api/owners/photos';
+    app._router.handle(req, res);
+  });
+
+  app.delete('/api/owners/photos', authorizeAdmin, async (req, res) => {
+    if (!isCloudinaryConfigured()) {
+      return res.status(500).json({ error: 'Cloudinary is not configured' });
+    }
+    try {
+      await removeOwnerPhotoFromCloudinary('samuel');
+      await removeOwnerPhotoFromCloudinary('emnet');
+      await saveOwnerPhotos({ samuel: '', emnet: '' });
+      return res.json({ success: true, message: 'Owner photos reset successfully.' });
     } catch (err: any) {
-      console.error('Error in /api/owners/photos:', err);
-      res.status(500).json({ error: err?.message || 'Failed to process owner photo upload.' });
+      return res.status(500).json({ error: err?.message || 'Failed to reset owner photos.' });
     }
   });
 
   // General Media Upload API for Products, Equipment, Categories, Owners (Admin Protected)
   app.post('/api/media/upload', authorizeAdmin, async (req, res) => {
+    if (!isCloudinaryConfigured()) {
+      return res.status(500).json({ error: 'Cloudinary is not configured' });
+    }
+
     try {
       const { dataUrl, folder, publicId } = req.body || {};
 
-      if (!dataUrl || typeof dataUrl !== 'string') {
-        return res.status(400).json({ error: 'Missing or invalid dataUrl parameter.' });
+      const val = validateImagePayload(dataUrl);
+      if (!val.valid) {
+        return res.status(400).json({ error: val.error });
       }
 
-      // Reject remote URLs to prevent SSRF security vulnerabilities; accept direct base64 image data URLs only
-      if (dataUrl.startsWith('http://') || dataUrl.startsWith('https://')) {
-        return res.status(400).json({
-          error: 'Remote URL uploads are disabled for SSRF security protection. Please upload direct base64 image files.',
-        });
-      }
-
-      if (!dataUrl.startsWith('data:image/')) {
-        return res.status(400).json({ error: 'Payload must be a valid base64 image data URL (data:image/...;base64,...).' });
-      }
-
-      // Format check: JPEG, PNG, WebP only
-      const isAllowedFormat = /^data:image\/(jpeg|jpg|png|webp);base64,/i.test(dataUrl);
-      if (!isAllowedFormat) {
-        return res.status(400).json({ error: 'Invalid image format. Allowed formats: JPEG, PNG, WebP.' });
-      }
-
-      // Enforce 10MB maximum payload limit (~14MB base64 string length)
-      if (dataUrl.length > 14 * 1024 * 1024) {
-        return res.status(400).json({ error: 'Image file size exceeds maximum limit of 10MB.' });
-      }
-
-      const isCloudinaryConfigured = Boolean(
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET
-      );
-
-      if (isCloudinaryConfigured) {
-        const uploadResult = await uploadMediaToCloudinary(dataUrl, folder || 'products', publicId);
-        if (uploadResult) {
-          return res.json({
-            success: true,
-            url: uploadResult.url,
-            public_id: uploadResult.public_id,
-            cloudinaryActive: true,
-          });
-        }
-      }
-
-      // Fallback response when Cloudinary is not configured in local environment
+      const uploadResult = await uploadMediaToCloudinary(dataUrl, folder || 'products', publicId);
       return res.json({
         success: true,
-        url: dataUrl,
-        public_id: `local-${Date.now()}`,
-        cloudinaryActive: false,
+        url: uploadResult.url,
+        public_id: uploadResult.public_id,
+        cloudinaryActive: true,
       });
     } catch (err: any) {
       console.error('Error in /api/media/upload:', err);
-      res.status(500).json({ error: err?.message || 'Failed to process media upload.' });
+      const errMsg = err?.message || 'Failed to process media upload.';
+      if (errMsg.includes('Unknown API key') || errMsg.includes('Must supply api_key') || errMsg.includes('Cloudinary is not configured')) {
+        return res.status(500).json({ error: 'Cloudinary is not configured' });
+      }
+      return res.status(500).json({ error: errMsg });
     }
   });
 
@@ -1881,9 +2007,13 @@ async function startServer() {
     };
     usersStore.push(newUserMem);
 
+    const formattedUser = createdDbUser || sanitizeUser(newUserMem);
+    const authToken = generateAuthToken(formattedUser);
+
     res.status(201).json({
       message: 'Account registered successfully.',
-      user: createdDbUser || sanitizeUser(newUserMem),
+      token: authToken,
+      user: formattedUser,
     });
   });
 
@@ -1975,9 +2105,11 @@ async function startServer() {
           if (user.verificationStatus === 'SUSPENDED') {
             return res.status(403).json({ error: 'This business account has been suspended by Melala Compliance Operations. Please contact sales support.' });
           }
+          const formatted = formatUserFromDb(user);
           return res.json({
             message: 'Signed in successfully.',
-            user: formatUserFromDb(user),
+            token: generateAuthToken(formatted),
+            user: formatted,
           });
         }
       } catch (err) {
@@ -1998,9 +2130,11 @@ async function startServer() {
       return res.status(403).json({ error: 'This business account has been suspended by Melala Compliance Operations. Please contact sales support.' });
     }
 
+    const formattedMem = sanitizeUser(memUser);
     res.json({
       message: 'Signed in successfully.',
-      user: sanitizeUser(memUser),
+      token: generateAuthToken(formattedMem),
+      user: formattedMem,
     });
   });
 

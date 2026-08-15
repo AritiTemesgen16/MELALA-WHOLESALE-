@@ -196,10 +196,12 @@ export const AboutContactPage: React.FC = () => {
               Founded and directed by licensed pharmaceutical professionals dedicated to ethical B2B healthcare distribution in Ethiopia.
             </p>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-xs font-medium">
-            <Camera className="w-3.5 h-3.5 text-amber-600" />
-            <span>Click any avatar to upload your photo</span>
-          </div>
+          {currentRole === 'admin' && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-xs font-medium">
+              <Camera className="w-3.5 h-3.5 text-amber-600" />
+              <span>Admin: Click avatar to update owner photo</span>
+            </div>
+          )}
         </div>
 
         {/* Hidden File Inputs */}
