@@ -208,6 +208,20 @@ async function startServer() {
   }
 
   async function getOwnerPhotos(): Promise<{ samuel: string; emnet: string }> {
+    const db = getDb();
+    if (db) {
+      // In PostgreSQL database environment, DB is the single authoritative source of truth.
+      // Any database error will be thrown to the caller to handle as a server error.
+      const rows = await db.select().from(schema.ownerPhotos);
+      const samuelRow = rows.find((r) => r.ownerKey === 'samuel');
+      const emnetRow = rows.find((r) => r.ownerKey === 'emnet');
+      return {
+        samuel: samuelRow?.photoUrl || '',
+        emnet: emnetRow?.photoUrl || '',
+      };
+    }
+
+    // Fallback ONLY for local non-database development environments
     const isCloudinaryConfigured = Boolean(
       process.env.CLOUDINARY_CLOUD_NAME &&
       process.env.CLOUDINARY_API_KEY &&
@@ -237,7 +251,48 @@ async function startServer() {
     return { samuel: '', emnet: '' };
   }
 
-  function saveOwnerPhotos(photos: { samuel?: string; emnet?: string }) {
+  async function saveOwnerPhotos(photos: { samuel?: string; emnet?: string }) {
+    const db = getDb();
+    if (db) {
+      // In PostgreSQL database environment, DB is authoritative.
+      // Perform database insertions/updates and throw any failure.
+      if (photos.samuel !== undefined) {
+        await db
+          .insert(schema.ownerPhotos)
+          .values({
+            ownerKey: 'samuel',
+            photoUrl: photos.samuel,
+            updatedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: schema.ownerPhotos.ownerKey,
+            set: { photoUrl: photos.samuel, updatedAt: new Date() },
+          });
+      }
+      if (photos.emnet !== undefined) {
+        await db
+          .insert(schema.ownerPhotos)
+          .values({
+            ownerKey: 'emnet',
+            photoUrl: photos.emnet,
+            updatedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: schema.ownerPhotos.ownerKey,
+            set: { photoUrl: photos.emnet, updatedAt: new Date() },
+          });
+      }
+
+      const rows = await db.select().from(schema.ownerPhotos);
+      const samuelRow = rows.find((r) => r.ownerKey === 'samuel');
+      const emnetRow = rows.find((r) => r.ownerKey === 'emnet');
+      return {
+        samuel: samuelRow?.photoUrl || '',
+        emnet: emnetRow?.photoUrl || '',
+      };
+    }
+
+    // Fallback ONLY for local non-database development environments
     try {
       if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -268,6 +323,36 @@ async function startServer() {
     });
   }
 
+  // --- AUTHENTICATION & AUTHORIZATION MIDDLEWARE ---
+  const authenticate = (req: any, res: any, next: any) => {
+    const authHeader = req.headers.authorization;
+    const token =
+      req.headers['x-auth-token'] ||
+      (authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
+    const userId = req.headers['x-user-id'];
+    const userRole = req.headers['x-user-role'];
+
+    if (!token && !userId) {
+      return res.status(401).json({ error: 'Unauthorized: Authentication required.' });
+    }
+
+    req.user = {
+      id: userId || 'user-anon',
+      role: userRole || 'public',
+      token,
+    };
+    next();
+  };
+
+  const authorizeAdmin = (req: any, res: any, next: any) => {
+    authenticate(req, res, () => {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Administrative privileges required.' });
+      }
+      next();
+    });
+  };
+
   // --- REST API ROUTES ---
 
   // Health check
@@ -275,13 +360,57 @@ async function startServer() {
     res.json({ status: 'ok', company: 'Melala Pharmaceutical Wholesale B2B' });
   });
 
-  // Owner Photos Persistence API
-  app.get('/api/owners/photos', async (req, res) => {
-    const photos = await getOwnerPhotos();
-    res.json(photos);
+  // SEO Routes
+  app.get('/robots.txt', (req, res) => {
+    const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
+    if (fs.existsSync(robotsPath)) {
+      res.type('text/plain').sendFile(robotsPath);
+    } else {
+      res.type('text/plain').send('User-agent: *\nAllow: /\nSitemap: https://melala-wholesale-1.onrender.com/sitemap.xml\n');
+    }
   });
 
-  app.post('/api/owners/photos', async (req, res) => {
+  app.get('/sitemap.xml', (req, res) => {
+    const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+    if (fs.existsSync(sitemapPath)) {
+      res.type('application/xml').sendFile(sitemapPath);
+    } else {
+      res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://melala-wholesale-1.onrender.com/</loc>
+    <lastmod>2026-08-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://melala-wholesale-1.onrender.com/catalog</loc>
+    <lastmod>2026-08-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://melala-wholesale-1.onrender.com/about</loc>
+    <lastmod>2026-08-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>`);
+    }
+  });
+
+  // Owner Photos Persistence API (Admin Protected)
+  app.get('/api/owners/photos', async (req, res) => {
+    try {
+      const photos = await getOwnerPhotos();
+      res.json(photos);
+    } catch (err: any) {
+      console.error('Error in GET /api/owners/photos:', err);
+      res.status(500).json({ error: err?.message || 'Failed to fetch owner photos from database.' });
+    }
+  });
+
+  app.post('/api/owners/photos', authorizeAdmin, async (req, res) => {
     const { samuel, emnet } = req.body || {};
     const updatedPhotos: { samuel?: string; emnet?: string } = {};
 
@@ -328,9 +457,7 @@ async function startServer() {
         }
       }
 
-      if (!isCloudinaryConfigured) {
-        saveOwnerPhotos(updatedPhotos);
-      }
+      await saveOwnerPhotos(updatedPhotos);
 
       const currentAndUpdated = await getOwnerPhotos();
       res.json({
@@ -344,8 +471,8 @@ async function startServer() {
     }
   });
 
-  // General Media Upload API for Products, Equipment, Categories, Owners
-  app.post('/api/media/upload', async (req, res) => {
+  // General Media Upload API for Products, Equipment, Categories, Owners (Admin Protected)
+  app.post('/api/media/upload', authorizeAdmin, async (req, res) => {
     try {
       const { dataUrl, folder, publicId } = req.body || {};
 
@@ -407,7 +534,7 @@ async function startServer() {
   });
 
   // Media Deletion API to remove orphaned Cloudinary assets
-  app.post('/api/media/delete', async (req, res) => {
+  app.post('/api/media/delete', authorizeAdmin, async (req, res) => {
     try {
       const { publicId, url } = req.body || {};
       let targetPublicId = publicId;
@@ -513,7 +640,7 @@ async function startServer() {
     res.json(categoriesStore);
   });
 
-  app.patch('/api/categories/:id', async (req, res) => {
+  app.patch('/api/categories/:id', authorizeAdmin, async (req, res) => {
     const { imageUrl, description, name } = req.body;
     const db = getDb();
     if (db) {
@@ -619,7 +746,7 @@ async function startServer() {
   });
 
   // POST Product (Admin)
-  app.post('/api/products', async (req, res) => {
+  app.post('/api/products', authorizeAdmin, async (req, res) => {
     const imagesList = req.body.images && Array.isArray(req.body.images) ? req.body.images : (req.body.imageUrl ? [req.body.imageUrl] : []);
     const mainImageUrl = req.body.imageUrl || imagesList[0] || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80';
 
@@ -695,7 +822,7 @@ async function startServer() {
   });
 
   // PUT Product (Admin Edit)
-  app.put('/api/products/:id', async (req, res) => {
+  app.put('/api/products/:id', authorizeAdmin, async (req, res) => {
     const imagesList = req.body.images && Array.isArray(req.body.images) ? req.body.images : (req.body.imageUrl ? [req.body.imageUrl] : []);
     const mainImageUrl = req.body.imageUrl || imagesList[0];
 
@@ -787,7 +914,7 @@ async function startServer() {
   });
 
   // DELETE Product (Admin Delete with Cloudinary Asset Cleanup)
-  app.delete('/api/products/:id', async (req, res) => {
+  app.delete('/api/products/:id', authorizeAdmin, async (req, res) => {
     const db = getDb();
     let deletedFromDb = false;
     if (db) {
@@ -1074,7 +1201,7 @@ async function startServer() {
   });
 
   // PATCH Product Feature Toggle (Admin)
-  app.patch('/api/products/:id/feature', async (req, res) => {
+  app.patch('/api/products/:id/feature', authorizeAdmin, async (req, res) => {
     const { isFeatured, promotionTag } = req.body;
     const db = getDb();
     let dbProduct = null;
@@ -1123,7 +1250,7 @@ async function startServer() {
     res.json(promotionsStore);
   });
 
-  app.post('/api/promotions', async (req, res) => {
+  app.post('/api/promotions', authorizeAdmin, async (req, res) => {
     const newPromoId = `promo-${Date.now()}`;
     const newPromoData = {
       id: newPromoId,
@@ -1162,7 +1289,7 @@ async function startServer() {
     res.status(201).json(createdDbPromo || newPromoMem);
   });
 
-  app.patch('/api/promotions/:id', async (req, res) => {
+  app.patch('/api/promotions/:id', authorizeAdmin, async (req, res) => {
     const db = getDb();
     let updatedDbPromo = null;
     if (db) {
@@ -1911,7 +2038,7 @@ async function startServer() {
   });
 
   // Update Customer Verification Status (Admin/Sales)
-  app.patch('/api/auth/users/:id/status', async (req, res) => {
+  app.patch('/api/auth/users/:id/status', authorizeAdmin, async (req, res) => {
     const { status, creditLimitEtb } = req.body;
     const db = getDb();
     let updatedDbUser = null;

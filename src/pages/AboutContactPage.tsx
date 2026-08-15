@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { getAuthHeaders } from '../services/api';
 import { MelalaLogo } from '../components/MelalaLogo';
 import samuelPhoto from '../assets/images/samuel_temesgen_1786458998149.jpg';
 import emnetPhoto from '../assets/images/emnet_amde_1786459015595.jpg';
@@ -23,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export const AboutContactPage: React.FC = () => {
-  const { showToast } = useApp();
+  const { currentRole, showToast } = useApp();
 
   const [contactName, setContactName] = useState('');
   const [facilityName, setFacilityName] = useState('');
@@ -85,7 +86,7 @@ export const AboutContactPage: React.FC = () => {
       try {
         const res = await fetch('/api/owners/photos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ samuel: samuelPendingPhoto }),
         });
         const data = await res.json();
@@ -111,7 +112,7 @@ export const AboutContactPage: React.FC = () => {
       try {
         const res = await fetch('/api/owners/photos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ emnet: emnetPendingPhoto }),
         });
         const data = await res.json();
@@ -140,7 +141,7 @@ export const AboutContactPage: React.FC = () => {
       try {
         await fetch('/api/owners/photos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ samuel: '' }),
         });
         setSamuelPhotoUrl(samuelPhoto);
@@ -153,7 +154,7 @@ export const AboutContactPage: React.FC = () => {
       try {
         await fetch('/api/owners/photos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ emnet: '' }),
         });
         setEmnetPhotoUrl(emnetPhoto);
@@ -226,29 +227,33 @@ export const AboutContactPage: React.FC = () => {
                   src={samuelPendingPhoto || samuelPhotoUrl}
                   alt="Samuel Temesgen - Owner & Pharmacist"
                   referrerPolicy="no-referrer"
-                  className="w-20 h-20 rounded-full object-cover object-top border-2 border-teal-600 shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => samuelInputRef.current?.click()}
-                  title="Click to choose custom photo for Samuel"
+                  className={`w-20 h-20 rounded-full object-cover object-top border-2 border-teal-600 shadow-sm ${
+                    currentRole === 'admin' ? 'cursor-pointer hover:opacity-90' : ''
+                  } transition-opacity`}
+                  onClick={() => currentRole === 'admin' && samuelInputRef.current?.click()}
+                  title={currentRole === 'admin' ? 'Click to choose custom photo for Samuel' : 'Samuel Temesgen'}
                 />
                 {samuelPendingPhoto && (
                   <span className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-500 text-white font-extrabold text-[9px] rounded-full uppercase shadow-xs">
                     Preview
                   </span>
                 )}
-                <button
-                  type="button"
-                  onClick={() => samuelInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 p-1.5 bg-teal-600 text-white rounded-full shadow-md hover:bg-teal-700 transition-colors"
-                  title="Choose Photo"
-                >
-                  <Camera className="w-3.5 h-3.5" />
-                </button>
+                {currentRole === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={() => samuelInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 p-1.5 bg-teal-600 text-white rounded-full shadow-md hover:bg-teal-700 transition-colors"
+                    title="Choose Photo"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
               <div className="flex-1 space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-extrabold text-slate-900 text-base">Samuel Temesgen</h3>
-                  {(samuelPendingPhoto || samuelPhotoUrl !== samuelPhoto) && (
+                  {currentRole === 'admin' && (samuelPendingPhoto || samuelPhotoUrl !== samuelPhoto) && (
                     <button
                       type="button"
                       onClick={() => handleResetPhoto('samuel')}
@@ -265,37 +270,39 @@ export const AboutContactPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-2 flex flex-wrap items-center gap-2 w-full border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => samuelInputRef.current?.click()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-all cursor-pointer"
-              >
-                <Upload className="w-3.5 h-3.5 text-slate-600" />
-                <span>Choose Photo</span>
-              </button>
-
-              {samuelPendingPhoto && (
+            {currentRole === 'admin' && (
+              <div className="pt-2 flex flex-wrap items-center gap-2 w-full border-t border-slate-100">
                 <button
                   type="button"
-                  disabled={isSamuelSaving}
-                  onClick={() => handleSaveChanges('samuel')}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white border border-teal-700 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                  onClick={() => samuelInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-all cursor-pointer"
                 >
-                  {isSamuelSaving ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      <span>SAVE CHANGES</span>
-                    </>
-                  )}
+                  <Upload className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Choose Photo</span>
                 </button>
-              )}
-            </div>
+
+                {samuelPendingPhoto && (
+                  <button
+                    type="button"
+                    disabled={isSamuelSaving}
+                    onClick={() => handleSaveChanges('samuel')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white border border-teal-700 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                  >
+                    {isSamuelSaving ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>SAVE CHANGES</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Emnet Amde */}
@@ -306,29 +313,33 @@ export const AboutContactPage: React.FC = () => {
                   src={emnetPendingPhoto || emnetPhotoUrl}
                   alt="Emnet Amde - Owner & Pharmacist"
                   referrerPolicy="no-referrer"
-                  className="w-20 h-20 rounded-full object-cover object-center border-2 border-teal-600 shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => emnetInputRef.current?.click()}
-                  title="Click to choose custom photo for Emnet"
+                  className={`w-20 h-20 rounded-full object-cover object-center border-2 border-teal-600 shadow-sm ${
+                    currentRole === 'admin' ? 'cursor-pointer hover:opacity-90' : ''
+                  } transition-opacity`}
+                  onClick={() => currentRole === 'admin' && emnetInputRef.current?.click()}
+                  title={currentRole === 'admin' ? 'Click to choose custom photo for Emnet' : 'Emnet Amde'}
                 />
                 {emnetPendingPhoto && (
                   <span className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-500 text-white font-extrabold text-[9px] rounded-full uppercase shadow-xs">
                     Preview
                   </span>
                 )}
-                <button
-                  type="button"
-                  onClick={() => emnetInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 p-1.5 bg-teal-600 text-white rounded-full shadow-md hover:bg-teal-700 transition-colors"
-                  title="Choose Photo"
-                >
-                  <Camera className="w-3.5 h-3.5" />
-                </button>
+                {currentRole === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={() => emnetInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 p-1.5 bg-teal-600 text-white rounded-full shadow-md hover:bg-teal-700 transition-colors"
+                    title="Choose Photo"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
               <div className="flex-1 space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-extrabold text-slate-900 text-base">Emnet Amde</h3>
-                  {(emnetPendingPhoto || emnetPhotoUrl !== emnetPhoto) && (
+                  {currentRole === 'admin' && (emnetPendingPhoto || emnetPhotoUrl !== emnetPhoto) && (
                     <button
                       type="button"
                       onClick={() => handleResetPhoto('emnet')}
@@ -345,37 +356,39 @@ export const AboutContactPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-2 flex flex-wrap items-center gap-2 w-full border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => emnetInputRef.current?.click()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-all cursor-pointer"
-              >
-                <Upload className="w-3.5 h-3.5 text-slate-600" />
-                <span>Choose Photo</span>
-              </button>
-
-              {emnetPendingPhoto && (
+            {currentRole === 'admin' && (
+              <div className="pt-2 flex flex-wrap items-center gap-2 w-full border-t border-slate-100">
                 <button
                   type="button"
-                  disabled={isEmnetSaving}
-                  onClick={() => handleSaveChanges('emnet')}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white border border-teal-700 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                  onClick={() => emnetInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-all cursor-pointer"
                 >
-                  {isEmnetSaving ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      <span>SAVE CHANGES</span>
-                    </>
-                  )}
+                  <Upload className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Choose Photo</span>
                 </button>
-              )}
-            </div>
+
+                {emnetPendingPhoto && (
+                  <button
+                    type="button"
+                    disabled={isEmnetSaving}
+                    onClick={() => handleSaveChanges('emnet')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white border border-teal-700 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                  >
+                    {isEmnetSaving ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>SAVE CHANGES</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

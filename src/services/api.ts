@@ -1,5 +1,27 @@
 import { Product, QuotationRequest, WholesaleOrder, CustomerLead, UserProfile, CategoryInfo } from '../types';
 
+export function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('melala_auth_token');
+    const userStr = localStorage.getItem('melala_current_user');
+    if (token) {
+      headers['x-auth-token'] = token;
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user?.id) headers['x-user-id'] = user.id;
+        if (user?.role) headers['x-user-role'] = user.role;
+      } catch (e) {}
+    }
+  }
+  return headers;
+}
+
 export async function fetchProducts(params?: {
   category?: string;
   search?: string;
@@ -28,10 +50,13 @@ export async function createProduct(productData: Partial<Product>): Promise<Prod
   try {
     const res = await fetch('/api/products', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(productData),
     });
-    if (!res.ok) throw new Error('Failed to create product');
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.error || 'Failed to create product');
+    }
     return await res.json();
   } catch (err) {
     console.error('Error creating product:', err);
@@ -69,7 +94,7 @@ export async function updateQuotation(id: string, updates: Partial<QuotationRequ
   try {
     const res = await fetch(`/api/quotes/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error('Failed to update quote');
@@ -110,7 +135,7 @@ export async function updateOrder(id: string, updates: Partial<WholesaleOrder>):
   try {
     const res = await fetch(`/api/orders/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error('Failed to update order');
@@ -164,7 +189,7 @@ export async function registerB2BCustomer(payload: {
   }
 }
 
-export async function loginB2BCustomer(email: string, password?: string): Promise<{ user?: UserProfile; error?: string; message?: string }> {
+export async function loginB2BCustomer(email: string, password?: string): Promise<{ user?: UserProfile; token?: string; error?: string; message?: string }> {
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
@@ -175,6 +200,12 @@ export async function loginB2BCustomer(email: string, password?: string): Promis
     if (!res.ok) {
       return { error: data.error || 'Login failed' };
     }
+    if (data.token) {
+      localStorage.setItem('melala_auth_token', data.token);
+    }
+    if (data.user) {
+      localStorage.setItem('melala_current_user', JSON.stringify(data.user));
+    }
     return data;
   } catch (err: any) {
     console.error('Error during B2B login:', err);
@@ -184,9 +215,13 @@ export async function loginB2BCustomer(email: string, password?: string): Promis
 
 export async function logoutB2BCustomer(): Promise<{ message?: string }> {
   try {
-    const res = await fetch('/api/auth/logout', { method: 'POST' });
+    const res = await fetch('/api/auth/logout', { method: 'POST', headers: getAuthHeaders() });
+    localStorage.removeItem('melala_auth_token');
+    localStorage.removeItem('melala_current_user');
     return await res.json();
   } catch (err) {
+    localStorage.removeItem('melala_auth_token');
+    localStorage.removeItem('melala_current_user');
     return { message: 'Logged out locally.' };
   }
 }
@@ -252,7 +287,7 @@ export async function updateUserVerificationStatus(
   try {
     const res = await fetch(`/api/auth/users/${userId}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ status, creditLimitEtb }),
     });
     const data = await res.json();
@@ -267,7 +302,7 @@ export async function submitVerification(userId: string, efdaLicenseNo: string, 
   try {
     const res = await fetch('/api/verifications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ userId, efdaLicenseNo, tinNumber }),
     });
     if (!res.ok) throw new Error('Failed to submit verification');
@@ -287,7 +322,7 @@ export async function requestAiQuotationAssistant(payload: {
   try {
     const res = await fetch('/api/ai/quotation-assistant', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('AI Quotation Assistant request failed');
@@ -302,7 +337,7 @@ export async function toggleProductFeature(id: string, isFeatured: boolean, prom
   try {
     const res = await fetch(`/api/products/${id}/feature`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ isFeatured, promotionTag }),
     });
     if (!res.ok) throw new Error('Failed to toggle product feature state');
@@ -328,7 +363,7 @@ export async function createPromotion(promoData: any): Promise<any | null> {
   try {
     const res = await fetch('/api/promotions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(promoData),
     });
     if (!res.ok) throw new Error('Failed to create promotion');
@@ -343,7 +378,7 @@ export async function updatePromotion(id: string, updates: any): Promise<any | n
   try {
     const res = await fetch(`/api/promotions/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error('Failed to update promotion');
@@ -358,7 +393,7 @@ export async function updateLead(id: string, updates: Partial<CustomerLead>): Pr
   try {
     const res = await fetch(`/api/leads/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error('Failed to update lead');
@@ -373,7 +408,7 @@ export async function addLeadNote(leadId: string, author: string, note: string, 
   try {
     const res = await fetch(`/api/leads/${leadId}/notes`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ author, note, actionType }),
     });
     if (!res.ok) throw new Error('Failed to add lead note');
@@ -423,7 +458,7 @@ export async function updateCallbackStatus(id: string, status: 'PENDING' | 'CONT
   try {
     const res = await fetch(`/api/callbacks/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ status }),
     });
     if (!res.ok) throw new Error('Failed to update callback status');
@@ -503,7 +538,7 @@ export async function uploadMedia(
   try {
     const res = await fetch('/api/media/upload', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ dataUrl, folder, publicId }),
     });
     const data = await res.json();
@@ -521,7 +556,7 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
   try {
     const res = await fetch(`/api/products/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error('Failed to update product');
@@ -549,7 +584,7 @@ export async function deleteMedia(
   try {
     const res = await fetch('/api/media/delete', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ url: urlOrPublicId, publicId: urlOrPublicId }),
     });
     const data = await res.json();
@@ -567,6 +602,7 @@ export async function deleteProduct(id: string): Promise<boolean> {
   try {
     const res = await fetch(`/api/products/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to delete product');
     return true;
@@ -580,7 +616,7 @@ export async function updateCategory(id: string, updates: Partial<CategoryInfo>)
   try {
     const res = await fetch(`/api/categories/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error('Failed to update category');

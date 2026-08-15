@@ -208,3 +208,12 @@ export const demandInsights = pgTable('demand_insights', {
   estimatedDemandValEtb: numeric('estimated_demand_val_etb', { precision: 12, scale: 2 }).default('100000'),
   lastSearchedAt: timestamp('last_searched_at').defaultNow().notNull(),
 });
+
+// 12. Owner Photos
+export const ownerPhotos = pgTable('owner_photos', {
+  ownerKey: varchar('owner_key', { length: 32 }).primaryKey(),
+  photoUrl: text('photo_url').notNull(),
+  cloudinaryPublicId: text('cloudinary_public_id'),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
