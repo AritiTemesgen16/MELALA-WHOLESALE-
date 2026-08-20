@@ -11,7 +11,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm run db:migrate && npm run build
+    buildCommand: npm run render:build
     startCommand: npm run start
     healthCheckPath: /api/health
     envVars:
@@ -21,6 +21,8 @@ services:
         fromDatabase:
           name: melala-db
           property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
