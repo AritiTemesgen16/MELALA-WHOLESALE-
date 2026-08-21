@@ -210,6 +210,15 @@ CREATE TABLE IF NOT EXISTS demand_insights (
   estimated_demand_val_etb NUMERIC(12, 2) DEFAULT 100000,
   last_searched_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS owner_photos (
+  id VARCHAR(64) PRIMARY KEY,
+  owner_id VARCHAR(64) NOT NULL UNIQUE,
+  owner_name TEXT NOT NULL,
+  photo_url TEXT NOT NULL,
+  cloudinary_public_id TEXT,
+  updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
 `;
 
 export async function initDbSchema() {
@@ -308,4 +317,3 @@ export function getDb() {
 }
 
 export const db = getDb();
-
